@@ -207,6 +207,7 @@
             let activeSequence = false;
             let tickRef;
             let lastTimestamp = 0;
+            let activePhase = 0;
 
             const inputState = { latLeft: false, latRight: false, vertShift: false };
 
@@ -487,7 +488,6 @@
             ];
 
             const pNode = new PrimaryNode();
-            let activePhase = null;
 
             function loadPhase(index) {
                 if (index >= phaseDatasets.length) {
@@ -620,16 +620,9 @@
             showOverlay('INITIATION', 'Use standard vectors (W,A,S,D/Arrows) to guide the node (Δ) to the target (∑).', 'COMMENCE', hideOverlay);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const trigger = document.getElementById('activation-target');
-            if(trigger) {
-                trigger.addEventListener('dblclick', () => {
-                    // Remove listener to prevent multiple invocations
-                    trigger.replaceWith(trigger.cloneNode(true));
-                    initSim();
-                });
-            }
-        });
+        window.addEventListener('dblclick', () => {
+          initSim();
+        })
     </script>
 </body>
 </html>
