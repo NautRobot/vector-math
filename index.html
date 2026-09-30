@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculus I Retake - Final Reference Guide</title>
+    <title>Kinematic Analysis - Multi-Agent Testbed</title>
     <style>
         :root {
             --bg-color: #fcfcfc;
@@ -20,166 +20,57 @@
             margin: 0 auto;
             padding: 40px 20px;
         }
-        h1, h2, h3 {
-            color: var(--header-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 5px;
-        }
-        .doc-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .institution {
-            font-size: 1.2em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-        .author-info {
-            font-style: italic;
-            margin-top: 10px;
-        }
-        .concept-block {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-left: 4px solid #666;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 1.1em;
-        }
-        .doc-footer {
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border-color);
-            text-align: center;
-            font-size: 0.9em;
-            color: #555;
-            user-select: none; /* Prevents text highlighting during interaction */
-        }
-        /* A subtle visual cue for the user, invisible to scrapers */
-        #activation-target {
-            cursor: default; 
-        }
+        h1, h2, h3 { color: var(--header-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .doc-header { text-align: center; margin-bottom: 40px; }
+        .institution { font-size: 1.2em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .concept-block { background-color: #f5f5f5; padding: 15px; border-left: 4px solid #666; margin-bottom: 20px; font-family: monospace; font-size: 1.1em; }
+        .doc-footer { margin-top: 60px; padding-top: 20px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 0.9em; color: #555; user-select: none; }
     </style>
 </head>
 <body>
+    <div id="decoy-container">
+        <div class="doc-header">
+            <div class="institution">University Mechanics</div>
+            <h1>Multi-Agent Kinematics</h1>
+            <div>Term: Fall Semester</div>
+        </div>
 
-    <div class="doc-header">
-        <div class="institution">College</div>
-        <h1>Calculus I</h1>
-        <div class="author-info">Prepared by: Student Doe</div>
-        <div>Term: Fall Semester</div>
-    </div>
+        <h2>1. The Definition of a Limit</h2>
+        <p>The limit of a function <em>f(x)</em> as <em>x</em> approaches <em>c</em> is the value that <em>f(x)</em> gets closer to as <em>x</em> gets closer to <em>c</em>. Understanding this behavior is fundamental before proceeding to derivatives.</p>
+        <div class="concept-block">lim (x -> c) f(x) = L</div>
 
-    <h2>1. The Definition of a Limit</h2>
-    <p>The limit of a function <em>f(x)</em> as <em>x</em> approaches <em>c</em> is the value that <em>f(x)</em> gets closer to as <em>x</em> gets closer to <em>c</em>. Understanding this behavior is fundamental before proceeding to derivatives.</p>
-    <div class="concept-block">
-        lim (x -> c) f(x) = L
-    </div>
-    <p>Remember to check both left-hand and right-hand limits. If they do not equate, the general limit does not exist at that specific point.</p>
-
-    <h2>2. Derivatives and the Power Rule</h2>
-    <p>A derivative represents the instantaneous rate of change of a function. The most common operational theorem you will use is the Power Rule. When faced with a polynomial, this rule simplifies the differentiation process immensely.</p>
-    <div class="concept-block">
-        d/dx [x^n] = n * x^(n-1)
-    </div>
-    <p>Do not forget to apply the constant multiple rule alongside the power rule. For example, d/dx [5x^3] = 15x^2.</p>
-
-    <h2>3. The Chain Rule</h2>
-    <p>For composite functions, the chain rule is mandatory. You must differentiate the outer function leaving the inner function untouched, and then multiply by the derivative of the inner function.</p>
-    <div class="concept-block">
-        d/dx [f(g(x))] = f'(g(x)) * g'(x)
-    </div>
-
-    <h2>4. Introduction to Integrals</h2>
-    <p>Integration is essentially the reverse process of differentiation. It is used to find areas under curves. Remember to always include the constant of integration, <em>C</em>, when performing indefinite integrals.</p>
-    <div class="concept-block">
-        ∫ f(x) dx = F(x) + C (where F'(x) = f(x))
-    </div>
-
-    <div class="doc-footer">
-        <p>Study Guide v2.1. Do not distribute without permission.</p>
+        <h2>2. Dynamic Anomalies in Systems</h2>
+        <p>When multiple autonomous agents interact within a structured environment, localized variances (anomalies) can disrupt the intended trajectory.</p>
+        <div class="concept-block">Σ F = m * a (Applied sequentially)</div>
+        
+        <div class="doc-footer">
+            <p>Study Guide v3.2. Double-click anywhere to initialize analysis sequence.</p>
+        </div>
     </div>
 
     <script>
-        // The payload is strictly encapsulated within this single function.
-        // Variables and engine components only exist in memory once this is invoked.
         function initSim() {
-            // 1. Purge the decoy DOM
+            // 1. Purge Decoy
             document.body.innerHTML = '';
             
-            // 2. Inject dynamic styles for the simulation interface
+            // 2. Inject Styles
             const style = document.createElement('style');
             style.innerHTML = `
-                body {
-                    margin: 0;
-                    padding: 0;
-                    background-color: #0d1117;
-                    color: #c9d1d9;
-                    font-family: monospace;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100vh;
-                    overflow: hidden;
-                    touch-action: none;
-                }
-                #sim-container {
-                    position: relative;
-                    width: 900px;
-                    height: 600px;
-                    background-color: #010409;
-                    border: 2px solid #30363d;
-                    box-shadow: 0 0 20px rgba(0,0,0,0.8);
-                }
-                canvas {
-                    display: block;
-                    width: 100%;
-                    height: 100%;
-                }
-                #telemetry-bar {
-                    width: 900px;
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 10px 0;
-                    font-size: 16px;
-                }
-                .overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(13,17,23,0.9);
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 10;
-                }
+                body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
+                #sim-container { position: relative; width: 900px; height: 600px; background-color: #010409; border: 2px solid #30363d; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+                canvas { display: block; width: 100%; height: 100%; }
+                #telemetry-bar { width: 900px; display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; }
+                .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,17,23,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; text-align: center; }
                 .hidden { display: none !important; }
-                .btn {
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    background: #238636;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    font-family: monospace;
-                    font-size: 16px;
-                }
+                .btn { margin-top: 20px; padding: 10px 20px; background: #238636; color: white; border: none; cursor: pointer; font-family: monospace; font-size: 16px; }
+                .roster { display: flex; gap: 20px; margin-top: 10px; }
+                .subject-card { padding: 10px; border: 1px solid #30363d; border-radius: 5px; width: 150px; }
             `;
             document.head.appendChild(style);
 
-            // 3. Construct the DOM nodes
+            // 3. UI Construct
             const telemetryBar = document.createElement('div');
             telemetryBar.id = 'telemetry-bar';
-            telemetryBar.innerHTML = `
-                <span>Dataset: <span id="data-phase">1</span>/5</span>
-                <span>Status: <span id="data-status" style="color:#3fb950">NOMINAL</span></span>
-                <span>Cycles: <span id="data-cycles">5</span></span>
-            `;
             document.body.appendChild(telemetryBar);
 
             const container = document.createElement('div');
@@ -187,84 +78,121 @@
             document.body.appendChild(container);
 
             const cvs = document.createElement('canvas');
-            cvs.width = 900;
-            cvs.height = 600;
+            cvs.width = 900; cvs.height = 600;
             container.appendChild(cvs);
 
             const overlay = document.createElement('div');
             overlay.className = 'overlay hidden';
-            overlay.innerHTML = `
-                <h1 id="overlay-title" style="margin:0 0 10px 0;">INITIATION</h1>
-                <p id="overlay-desc">Use standard vectors (W,A,S,D/Arrows) to guide the node (Δ) to the target (∑).</p>
-                <button class="btn" id="overlay-btn">COMMENCE</button>
-            `;
+            overlay.id = 'overlay';
             container.appendChild(overlay);
 
             const ctx = cvs.getContext('2d');
 
-            let currentPhaseIndex = 0;
-            let cycleCount = 5;
+            // --- SIMULATION DATA ---
+            const trackLength = 3500;
+            let cameraX = 0;
+            
+            const entities = [
+                { id: 0, name: 'Subject Alpha (Human)', color: '#58a6ff', isBot: false, constraint: 'NONE' },
+                { id: 1, name: 'Subject Beta (Human)', color: '#3fb950', isBot: false, constraint: 'NONE' },
+                { id: 2, name: 'Automaton Gamma', color: '#d29922', isBot: true, constraint: 'NONE' },
+                { id: 3, name: 'Automaton Delta', color: '#bc8cff', isBot: true, constraint: 'NONE' }
+            ];
+
+            const constraints = [
+                { name: 'MOTOR_DEGRADATION', effect: (n) => n.latForce = 150 }, // Slow
+                { name: 'MASS_INCREASE', effect: (n) => n.vertForce = -400 },   // Low Jump
+                { name: 'GRAVITY_SURGE', effect: (n) => n.gravConstant = 1800 } // High grav
+            ];
+
+            let activeEntityIndex = 0;
+            let sequenceRound = 1;
             let activeSequence = false;
             let tickRef;
             let lastTimestamp = 0;
-            let activePhase = 0;
-
+            
             const inputState = { latLeft: false, latRight: false, vertShift: false };
 
+            // Input Mapping
             window.addEventListener('keydown', (e) => {
-                if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputState.latLeft = true;
-                if (['ArrowRight', 'd', 'D'].includes(e.key)) inputState.latRight = true;
-                if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputState.vertShift = true;
+                if (!activeSequence) return;
+                // Active Runner Controls
+                if (['ArrowLeft'].includes(e.key)) inputState.latLeft = true;
+                if (['ArrowRight'].includes(e.key)) inputState.latRight = true;
+                if (['ArrowUp'].includes(e.key)) inputState.vertShift = true;
+                
+                // Defender Controls
+                if (!entities[activeEntityIndex].isBot || entities[activeEntityIndex].isBot) {
+                    if (e.key === 'a' || e.key === 'A') triggerAnomalies('A');
+                    if (e.key === 's' || e.key === 'S') triggerAnomalies('S');
+                    if (e.key === 'd' || e.key === 'D') triggerAnomalies('D');
+                }
             });
             window.addEventListener('keyup', (e) => {
-                if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputState.latLeft = false;
-                if (['ArrowRight', 'd', 'D'].includes(e.key)) inputState.latRight = false;
-                if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputState.vertShift = false;
+                if (['ArrowLeft'].includes(e.key)) inputState.latLeft = false;
+                if (['ArrowRight'].includes(e.key)) inputState.latRight = false;
+                if (['ArrowUp'].includes(e.key)) inputState.vertShift = false;
             });
 
+            // --- CLASSES ---
             class PrimaryNode {
                 constructor() {
                     this.w = 20; this.h = 20;
-                    // this.resetPosition();
+                    this.resetPosition();
                 }
                 resetPosition() {
-                    this.x = activePhase.origin.x;
-                    this.y = activePhase.origin.y;
-                    this.vX = 0;
-                    this.vY = 0;
+                    this.x = 50; this.y = 400;
+                    this.vX = 0; this.vY = 0;
                     this.grounded = false;
+                    
+                    // Base physical stats
+                    this.latForce = 300;
+                    this.vertForce = -550;
+                    this.gravConstant = 1200;
+
+                    // Apply constraints if any
+                    const currentConstraint = entities[activeEntityIndex].constraint;
+                    if (currentConstraint !== 'NONE') {
+                        const rule = constraints.find(c => c.name === currentConstraint);
+                        if (rule) rule.effect(this);
+                    }
                 }
                 computeTrajectory(delta) {
-                    const latForce = 300;
-                    const vertForce = -500;
-                    const gravConstant = 1200;
+                    // Bot AI override
+                    if (entities[activeEntityIndex].isBot) {
+                        inputState.latRight = true;
+                        inputState.latLeft = false;
+                        // Jump logic: if moving right but blocked, or approaching gap
+                        if (this.grounded && Math.abs(this.vX) < 50) {
+                            inputState.vertShift = true;
+                        } else {
+                            inputState.vertShift = false;
+                        }
+                    }
 
-                    if (inputState.latLeft) this.vX = -latForce;
-                    else if (inputState.latRight) this.vX = latForce;
+                    if (inputState.latLeft) this.vX = -this.latForce;
+                    else if (inputState.latRight) this.vX = this.latForce;
                     else this.vX = 0;
 
                     if (inputState.vertShift && this.grounded) {
-                        this.vY = vertForce;
+                        this.vY = this.vertForce;
                         this.grounded = false;
                     }
 
-                    this.vY += gravConstant * delta;
+                    this.vY += this.gravConstant * delta;
 
-                    // Apply lateral shift & check structural boundaries
                     this.x += this.vX * delta;
                     this.resolveBoundaries('X');
 
-                    // Apply vertical shift & check structural boundaries
                     this.y += this.vY * delta;
                     this.grounded = false;
                     this.resolveBoundaries('Y');
 
                     if (this.x < 0) this.x = 0;
-                    if (this.x > cvs.width - this.w) this.x = cvs.width - this.w;
-                    if (this.y > cvs.height) triggerRecalibration();
+                    if (this.y > cvs.height + 100) triggerDesync(); // Fell out of bounds
                 }
                 resolveBoundaries(axis) {
-                    for (let struct of activePhase.structures) {
+                    for (let struct of structures) {
                         if (this.x < struct.x + struct.w && this.x + this.w > struct.x &&
                             this.y < struct.y + struct.h && this.y + this.h > struct.y) {
                             
@@ -285,7 +213,7 @@
                     }
                 }
                 render() {
-                    ctx.fillStyle = '#58a6ff';
+                    ctx.fillStyle = entities[activeEntityIndex].color;
                     ctx.fillRect(this.x, this.y, this.w, this.h);
                     ctx.fillStyle = 'white';
                     ctx.font = '14px monospace';
@@ -294,9 +222,7 @@
             }
 
             class StructuralBound {
-                constructor(x, y, w, h) {
-                    this.x = x; this.y = y; this.w = w; this.h = h;
-                }
+                constructor(x, y, w, h) { this.x = x; this.y = y; this.w = w; this.h = h; }
                 render() {
                     ctx.fillStyle = '#30363d';
                     ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -305,324 +231,255 @@
                 }
             }
 
-            class ConvergenceZone {
-                constructor(x, y) {
-                    this.x = x; this.y = y; this.w = 30; this.h = 30;
-                }
-                render() {
-                    ctx.fillStyle = '#3fb950';
-                    ctx.fillRect(this.x, this.y, this.w, this.h);
-                    ctx.fillStyle = 'white';
-                    ctx.font = '20px monospace';
-                    ctx.fillText('∑', this.x + 8, this.y + 22);
-                }
-            }
-
             class DynamicAnomaly {
-                constructor(cfg) {
-                    this.type = cfg.type; 
-                    this.x = cfg.x; this.y = cfg.y;
-                    this.w = 20; this.h = 20;
-                    
-                    if (this.type === 'oscillator') {
-                        this.vX = cfg.speed || 150;
-                        this.minX = cfg.min; this.maxX = cfg.max;
-                    } else if (this.type === 'proximityDrop') {
-                        this.vY = 0;
-                        this.triggerX = cfg.tX; this.triggerY = cfg.tY; 
-                        this.triggerW = cfg.tW; this.triggerH = cfg.tH;
-                        this.active = false;
-                    } else if (this.type === 'emitter') {
-                        this.interval = cfg.interval;
-                        this.timer = 0;
-                        this.emitVX = cfg.eVX; this.emitVY = cfg.eVY;
-                        this.particles = [];
+                constructor(x, y, type, triggerKey) {
+                    this.ox = x; this.oy = y;
+                    this.x = x; this.y = y;
+                    this.type = type; // 'drop', 'piston', 'emitter'
+                    this.triggerKey = triggerKey; // 'A', 'S', 'D'
+                    this.w = 30; this.h = 30;
+                    this.active = false;
+                    this.timer = 0;
+                    this.particles = [];
+                }
+                trigger() {
+                    if (this.active) return;
+                    this.active = true;
+                    this.timer = 0;
+                    if (this.type === 'emitter') {
+                        this.particles.push({ x: this.x, y: this.y + 10, w: 10, h: 10, vX: -400 });
+                        setTimeout(() => { this.active = false; }, 1000); // Cooldown
                     }
                 }
-                processVariance(delta, nodeRef) {
-                    if (this.type === 'oscillator') {
-                        this.x += this.vX * delta;
-                        if (this.x < this.minX || this.x + this.w > this.maxX) this.vX *= -1;
-                        this.checkIntersection(nodeRef, this.x, this.y, this.w, this.h);
-                    } 
-                    else if (this.type === 'proximityDrop') {
-                        if (!this.active) {
-                            if (nodeRef.x < this.triggerX + this.triggerW && nodeRef.x + nodeRef.w > this.triggerX &&
-                                nodeRef.y < this.triggerY + this.triggerH && nodeRef.y + nodeRef.h > this.triggerY) {
-                                this.active = true;
-                            }
-                        } else {
-                            this.vY += 1000 * delta; // Gravity
-                            this.y += this.vY * delta;
+                process(delta, nodeRef) {
+                    if (this.type === 'drop') {
+                        if (this.active) {
+                            this.timer += delta;
+                            if (this.timer < 0.2) this.y += 800 * delta; // Fall
+                            else if (this.timer > 1.5 && this.timer < 2.5) this.y -= 160 * delta; // Retract
+                            else if (this.timer >= 2.5) { this.active = false; this.y = this.oy; }
                             this.checkIntersection(nodeRef, this.x, this.y, this.w, this.h);
                         }
-                    }
-                    else if (this.type === 'emitter') {
-                        this.timer += delta * 1000;
-                        if (this.timer > this.interval) {
-                            this.particles.push({x: this.x, y: this.y, w: 10, h: 10, vX: this.emitVX, vY: this.emitVY});
-                            this.timer = 0;
+                    } else if (this.type === 'piston') {
+                        if (this.active) {
+                            this.timer += delta;
+                            if (this.timer < 0.1) this.y -= 1000 * delta; // Thrust up
+                            else if (this.timer > 0.5 && this.timer < 1.0) this.y += 200 * delta; // Retract
+                            else if (this.timer >= 1.0) { this.active = false; this.y = this.oy; }
+                            this.checkIntersection(nodeRef, this.x, this.y, this.w, this.h);
                         }
+                    } else if (this.type === 'emitter') {
                         for (let i = this.particles.length - 1; i >= 0; i--) {
                             let p = this.particles[i];
-                            p.x += p.vX * delta; p.y += p.vY * delta;
+                            p.x += p.vX * delta;
                             if (this.checkIntersection(nodeRef, p.x, p.y, p.w, p.h)) {
                                 this.particles.splice(i, 1); continue;
                             }
-                            if (p.x < -20 || p.x > cvs.width+20 || p.y > cvs.height+20) this.particles.splice(i,1);
+                            if (p.x < cameraX - 100) this.particles.splice(i, 1);
                         }
                     }
                 }
                 checkIntersection(nodeRef, tx, ty, tw, th) {
-                    let tol = 2;
-                    if (nodeRef.x < tx + tw - tol && nodeRef.x + nodeRef.w > tx + tol &&
-                        nodeRef.y < ty + th - tol && nodeRef.y + nodeRef.h > ty + tol) {
-                        triggerRecalibration();
+                    if (nodeRef.x < tx + tw && nodeRef.x + nodeRef.w > tx &&
+                        nodeRef.y < ty + th && nodeRef.y + nodeRef.h > ty) {
+                        triggerDesync();
                         return true;
                     }
                     return false;
                 }
                 render() {
-                    ctx.fillStyle = '#ff7b72';
-                    if (this.type === 'oscillator' || (this.type === 'proximityDrop' && this.active)) {
+                    ctx.fillStyle = this.active ? '#ff7b72' : '#8b949e';
+                    if (this.type === 'drop' || this.type === 'piston') {
                         ctx.fillRect(this.x, this.y, this.w, this.h);
                         ctx.fillStyle = 'white';
                         ctx.font = '14px monospace';
-                        ctx.fillText('Ω', this.x + 4, this.y + 15);
+                        ctx.fillText(this.triggerKey, this.x + 8, this.y + 20);
                     } else if (this.type === 'emitter') {
                         ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.fillStyle = 'white';
+                        ctx.fillText(this.triggerKey, this.x + 8, this.y + 20);
                         ctx.fillStyle = '#f85149';
-                        for (let p of this.particles) {
-                            ctx.fillRect(p.x, p.y, p.w, p.h);
-                        }
+                        for (let p of this.particles) ctx.fillRect(p.x, p.y, p.w, p.h);
                     }
                 }
             }
 
-            const phaseDatasets = [
-                // Phase 1: Basic Introduction
-                {
-                    origin: {x: 50, y: 500},
-                    target: new ConvergenceZone(800, 150),
-                    structures: [
-                        new StructuralBound(0, 550, 900, 50),
-                        new StructuralBound(200, 480, 100, 20),
-                        new StructuralBound(400, 410, 100, 20),
-                        new StructuralBound(600, 340, 100, 20),
-                        new StructuralBound(750, 200, 150, 20)
-                    ],
-                    anomalies: [
-                        new DynamicAnomaly({type: 'oscillator', x: 250, y: 530, min: 150, max: 800, speed: 120})
-                    ]
-                },
-                // Phase 2: Proximity Drop Introductions
-                {
-                    origin: {x: 50, y: 500},
-                    target: new ConvergenceZone(800, 500),
-                    structures: [
-                        new StructuralBound(0, 550, 200, 50),
-                        new StructuralBound(250, 400, 100, 20),
-                        new StructuralBound(450, 250, 100, 20),
-                        new StructuralBound(700, 550, 200, 50)
-                    ],
-                    anomalies: [
-                        new DynamicAnomaly({type: 'proximityDrop', x: 300, y: 50, tX: 250, tY: 200, tW: 100, tH: 300}),
-                        new DynamicAnomaly({type: 'proximityDrop', x: 500, y: 50, tX: 450, tY: 100, tW: 100, tH: 400})
-                    ]
-                },
-                // Phase 3: Emitter Fields
-                {
-                    origin: {x: 50, y: 100},
-                    target: new ConvergenceZone(800, 500),
-                    structures: [
-                        new StructuralBound(0, 150, 150, 20),
-                        new StructuralBound(200, 250, 150, 20),
-                        new StructuralBound(400, 350, 150, 20),
-                        new StructuralBound(600, 450, 150, 20),
-                        new StructuralBound(750, 550, 150, 50)
-                    ],
-                    anomalies: [
-                        new DynamicAnomaly({type: 'emitter', x: 880, y: 220, interval: 1500, eVX: -200, eVY: 0}),
-                        new DynamicAnomaly({type: 'emitter', x: 0, y: 320, interval: 1200, eVX: 250, eVY: 0}),
-                        new DynamicAnomaly({type: 'oscillator', x: 400, y: 330, min: 400, max: 550, speed: 80})
-                    ]
-                },
-                // Phase 4: Compound Variances
-                {
-                    origin: {x: 50, y: 500},
-                    target: new ConvergenceZone(50, 100),
-                    structures: [
-                        new StructuralBound(0, 550, 900, 50),
-                        new StructuralBound(200, 450, 150, 20),
-                        new StructuralBound(500, 350, 150, 20),
-                        new StructuralBound(700, 250, 100, 20),
-                        new StructuralBound(400, 150, 150, 20),
-                        new StructuralBound(200, 200, 100, 20),
-                        new StructuralBound(0, 150, 150, 20)
-                    ],
-                    anomalies: [
-                        new DynamicAnomaly({type: 'oscillator', x: 200, y: 530, min: 200, max: 800, speed: 200}),
-                        new DynamicAnomaly({type: 'emitter', x: 450, y: -20, interval: 1000, eVX: 0, eVY: 250}),
-                        new DynamicAnomaly({type: 'proximityDrop', x: 250, y: 0, tX: 200, tY: 150, tW: 100, tH: 100})
-                    ]
-                },
-                // Phase 5: Convergence Test
-                {
-                    origin: {x: 50, y: 500},
-                    target: new ConvergenceZone(800, 100),
-                    structures: [
-                        new StructuralBound(0, 550, 150, 50),
-                        new StructuralBound(200, 450, 80, 20),
-                        new StructuralBound(350, 380, 80, 20),
-                        new StructuralBound(500, 300, 80, 20),
-                        new StructuralBound(650, 220, 80, 20),
-                        new StructuralBound(750, 150, 150, 50)
-                    ],
-                    anomalies: [
-                        new DynamicAnomaly({type: 'emitter', x: 880, y: 420, interval: 800, eVX: -300, eVY: 0}),
-                        new DynamicAnomaly({type: 'emitter', x: 880, y: 280, interval: 1000, eVX: -250, eVY: 0}),
-                        new DynamicAnomaly({type: 'proximityDrop', x: 380, y: -20, tX: 300, tY: 200, tW: 200, tH: 300}),
-                        new DynamicAnomaly({type: 'proximityDrop', x: 680, y: -20, tX: 600, tY: 100, tW: 150, tH: 300})
-                    ]
-                }
+            // --- LEVEL DATA ---
+            const structures = [
+                new StructuralBound(0, 500, 800, 100),
+                new StructuralBound(800, 500, 100, 100), // Gap after 900
+                new StructuralBound(1000, 500, 600, 100),
+                new StructuralBound(1600, 400, 100, 200), // Wall jump needed
+                new StructuralBound(1800, 300, 400, 300),
+                new StructuralBound(2300, 500, 1200, 100) // Final stretch
+            ];
+
+            const anomalies = [
+                new DynamicAnomaly(400, 100, 'drop', 'A'),
+                new DynamicAnomaly(600, 500, 'piston', 'S'),
+                new DynamicAnomaly(1200, 100, 'drop', 'D'),
+                new DynamicAnomaly(1500, 470, 'emitter', 'A'),
+                new DynamicAnomaly(1900, 0, 'drop', 'S'),
+                new DynamicAnomaly(2100, 0, 'drop', 'D'),
+                new DynamicAnomaly(2500, 470, 'emitter', 'A'),
+                new DynamicAnomaly(2800, 500, 'piston', 'S'),
+                new DynamicAnomaly(3100, 100, 'drop', 'D')
             ];
 
             const pNode = new PrimaryNode();
 
-            function loadPhase(index) {
-                if (index >= phaseDatasets.length) {
-                    completeSimulation();
-                    return;
-                }
-                const data = phaseDatasets[index];
-                // Deep copy anomalies to reset their states entirely
-                activePhase = {
-                    origin: data.origin,
-                    target: data.target,
-                    structures: data.structures,
-                    anomalies: data.anomalies.map(a => new DynamicAnomaly(JSON.parse(JSON.stringify(a)))) 
-                };
-                pNode.resetPosition();
-                document.getElementById('data-phase').innerText = index + 1;
+            // --- GAME FLOW LOGIC ---
+            function updateTelemetry() {
+                let html = `
+                    <div style="color: ${entities[activeEntityIndex].color}">
+                        <strong>ACTIVE:</strong> ${entities[activeEntityIndex].name}
+                    </div>
+                    <div><strong>SEQUENCE:</strong> ${sequenceRound}</div>
+                    <div><strong>CONTROLS:</strong> Runner uses Arrows. Defenders use A, S, D.</div>
+                `;
+                document.getElementById('telemetry-bar').innerHTML = html;
             }
 
-            function showOverlay(title, desc, btnText, btnAction) {
+            function triggerAnomalies(key) {
+                anomalies.forEach(a => { if (a.triggerKey === key) a.trigger(); });
+            }
+
+            function processAutomatonDefenders() {
+                // Bots randomly fire traps if runner is past x=200
+                if (pNode.x > 200) {
+                    if (Math.random() < 0.015) triggerAnomalies('A');
+                    if (Math.random() < 0.015) triggerAnomalies('S');
+                    if (Math.random() < 0.015) triggerAnomalies('D');
+                }
+            }
+
+            function showOverlay(title, desc, btnText, action) {
                 activeSequence = false;
-                document.getElementById('overlay-title').innerText = title;
-                document.getElementById('overlay-desc').innerText = desc;
-                const btn = document.getElementById('overlay-btn');
-                btn.innerText = btnText;
-                btn.onclick = btnAction;
-                overlay.classList.remove('hidden');
+                const ov = document.getElementById('overlay');
+                
+                // Build Roster
+                let rosterHTML = '<div class="roster">';
+                entities.forEach(e => {
+                    rosterHTML += `
+                        <div class="subject-card" style="border-color: ${e.color}">
+                            <div style="color: ${e.color}; font-weight:bold">${e.name}</div>
+                            <div style="font-size:12px; margin-top:5px;">Constraint: ${e.constraint}</div>
+                        </div>
+                    `;
+                });
+                rosterHTML += '</div>';
+
+                ov.innerHTML = `
+                    <h1 style="margin:0 0 10px 0; color: white;">${title}</h1>
+                    <p style="color: #c9d1d9; max-width: 600px;">${desc}</p>
+                    ${rosterHTML}
+                    <button class="btn" id="overlay-btn">${btnText}</button>
+                `;
+                document.getElementById('overlay-btn').onclick = action;
+                ov.classList.remove('hidden');
             }
 
             function hideOverlay() {
-                overlay.classList.add('hidden');
+                document.getElementById('overlay').classList.add('hidden');
                 activeSequence = true;
+                
+                // Reset map states
+                anomalies.forEach(a => { a.active = false; a.y = a.oy; a.particles = []; });
+                pNode.resetPosition();
+                cameraX = 0;
+                inputState.latLeft = false; inputState.latRight = false; inputState.vertShift = false;
+
+                updateTelemetry();
                 lastTimestamp = performance.now();
                 tickRef = requestAnimationFrame(processTick);
             }
 
-            function triggerRecalibration() {
+            function triggerDesync() {
                 if (!activeSequence) return;
-                cycleCount--;
-                document.getElementById('data-cycles').innerText = cycleCount;
+                activeSequence = false;
                 
-                if (cycleCount <= 0) {
-                    document.getElementById('data-status').innerText = 'CRITICAL FAILURE';
-                    document.getElementById('data-status').style.color = '#ff7b72';
-                    showOverlay('ITERATION LIMIT REACHED', 'The primary node was compromised.', 'RESTART DATASET', () => {
-                        cycleCount = 5;
-                        currentPhaseIndex = 0;
-                        document.getElementById('data-cycles').innerText = cycleCount;
-                        document.getElementById('data-status').innerText = 'NOMINAL';
-                        document.getElementById('data-status').style.color = '#3fb950';
-                        loadPhase(currentPhaseIndex);
-                        hideOverlay();
-                    });
-                } else {
-                    // Flash red
-                    ctx.fillStyle = 'rgba(255, 123, 114, 0.4)';
-                    ctx.fillRect(0,0,cvs.width, cvs.height);
+                // Screen Flash
+                ctx.fillStyle = 'rgba(255, 123, 114, 0.4)';
+                ctx.fillRect(0,0,cvs.width, cvs.height);
+
+                setTimeout(() => {
+                    activeEntityIndex++;
+                    if (activeEntityIndex >= entities.length) {
+                        activeEntityIndex = 0;
+                        sequenceRound++;
+                        
+                        // Apply random constraint at end of round
+                        const targetEntity = entities[Math.floor(Math.random() * entities.length)];
+                        const newConstraint = constraints[Math.floor(Math.random() * constraints.length)];
+                        targetEntity.constraint = newConstraint.name;
+
+                        showOverlay('SEQUENCE COMPLETE', 
+                            `All subjects have processed. A new System Constraint has been applied to ${targetEntity.name}.`, 
+                            'COMMENCE NEXT SEQUENCE', hideOverlay);
+                    } else {
+                        showOverlay('DESYNC DETECTED', 
+                            `Trajectory interrupted. Commencing analysis for ${entities[activeEntityIndex].name}.`, 
+                            'INITIATE', hideOverlay);
+                    }
+                }, 300);
+            }
+
+            function checkConvergence() {
+                if (pNode.x > trackLength - 100) { // Goal area
                     activeSequence = false;
-                    setTimeout(() => {
-                        loadPhase(currentPhaseIndex); // reload to reset anomalies
-                        activeSequence = true;
-                        lastTimestamp = performance.now();
-                        requestAnimationFrame(processTick);
-                    }, 200);
+                    showOverlay('CONVERGENCE ACHIEVED', 
+                        `${entities[activeEntityIndex].name} successfully navigated the anomalies. Test concluded.`, 
+                        'RESTART ENTIRE TEST', () => { location.reload(); });
                 }
-            }
-
-            function advancePhase() {
-                activeSequence = false;
-                currentPhaseIndex++;
-                if (currentPhaseIndex < phaseDatasets.length) {
-                    showOverlay('DATASET ACQUIRED', `Proceeding to phase ${currentPhaseIndex + 1}...`, 'CONTINUE', () => {
-                        loadPhase(currentPhaseIndex);
-                        hideOverlay();
-                    });
-                } else {
-                    completeSimulation();
-                }
-            }
-
-            function completeSimulation() {
-                activeSequence = false;
-                document.getElementById('data-status').innerText = 'CONVERGENCE ACHIEVED';
-                showOverlay('ANALYSIS COMPLETE', 'All datasets have been successfully processed.', 'RESTART SEQUENCE', () => {
-                    cycleCount = 5;
-                    currentPhaseIndex = 0;
-                    document.getElementById('data-cycles').innerText = cycleCount;
-                    document.getElementById('data-status').innerText = 'NOMINAL';
-                    loadPhase(currentPhaseIndex);
-                    hideOverlay();
-                });
             }
 
             function processTick(timestamp) {
                 if (!activeSequence) return;
-                
                 const delta = (timestamp - lastTimestamp) / 1000;
                 lastTimestamp = timestamp;
 
-                if (delta > 0.1) { 
-                    tickRef = requestAnimationFrame(processTick);
-                    return; 
-                }
+                if (delta > 0.1) { tickRef = requestAnimationFrame(processTick); return; }
 
-                // Process Kinematics
+                processAutomatonDefenders();
                 pNode.computeTrajectory(delta);
-                for (let anomaly of activePhase.anomalies) {
-                    anomaly.processVariance(delta, pNode);
-                }
 
-                // Check Convergence
-                const t = activePhase.target;
-                if (pNode.x < t.x + t.w && pNode.x + pNode.w > t.x &&
-                    pNode.y < t.y + t.h && pNode.y + pNode.h > t.y) {
-                    advancePhase();
-                    return;
-                }
+                // Camera Logic
+                const targetCameraX = pNode.x - 300;
+                if (targetCameraX > cameraX) cameraX = targetCameraX; // Only scroll forward
 
-                // Render Pipeline
+                // Draw Pipeline
                 ctx.clearRect(0, 0, cvs.width, cvs.height);
-                for (let struct of activePhase.structures) struct.render();
-                activePhase.target.render();
-                for (let anomaly of activePhase.anomalies) anomaly.render();
+                
+                ctx.save();
+                ctx.translate(-cameraX, 0);
+
+                // Goal Zone
+                ctx.fillStyle = '#238636';
+                ctx.fillRect(trackLength - 50, 0, 50, 600);
+                ctx.fillStyle = 'white';
+                ctx.fillText('∑', trackLength - 30, 300);
+
+                for (let struct of structures) struct.render();
+                for (let anomaly of anomalies) {
+                    anomaly.process(delta, pNode);
+                    anomaly.render();
+                }
                 pNode.render();
 
-                tickRef = requestAnimationFrame(processTick);
+                ctx.restore();
+                
+                checkConvergence();
+                if (activeSequence) tickRef = requestAnimationFrame(processTick);
             }
 
-            // Begin
-            loadPhase(0);
-            showOverlay('INITIATION', 'Use standard vectors (W,A,S,D/Arrows) to guide the node (Δ) to the target (∑).', 'COMMENCE', hideOverlay);
+            // Init Start
+            showOverlay('MULTI-AGENT INITIALIZED', 
+                'Objective: Navigate to the Convergence Zone (∑) on the far right. <br><br><b>Runner:</b> Use Arrow Keys to move.<br><b>Defenders:</b> Press A, S, and D to trigger Anomalies and intercept the Runner.', 
+                'COMMENCE', hideOverlay);
         }
 
-        window.addEventListener('dblclick', () => {
-          initSim();
-        })
+        // Trigger mechanism
+        window.addEventListener('dblclick', () => { initSim(); });
     </script>
 </body>
 </html>
