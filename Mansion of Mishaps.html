@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mansion of Mishaps</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            color: #fff;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e0f7fa;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(26, 26, 46, 0.9);
+            z-index: 10;
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            color: #ffb400;
+            text-shadow: 3px 3px 0 #c2185b;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            background-color: #ffb400;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #c28e00;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #c28e00;
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #c28e00;
+        }
+
+        /* HUD Styling */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 5;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+        }
+
+        .hud-item {
+            background: rgba(0,0,0,0.4);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        #task-display {
+            color: #ffeb3b;
+        }
+
+        /* Mobile Controls (Hidden by default, shown via media query if needed, but keeping it keyboard focus for now per request, add basic touch support just in case) */
+        #mobile-controls {
+            display: none;
+        }
+
+        @media (max-width: 850px) {
+            #game-container {
+                width: 100vw;
+                height: 75vw; /* maintain 4:3 aspect ratio */
+                max-height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="hud">
+            <div class="hud-item" id="lives-display">Lives: ❤️❤️❤️❤️❤️</div>
+            <div class="hud-item" id="task-display">Task: ???</div>
+            <div class="hud-item" id="time-display">00:00</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="ui-layer">
+            <h1>Mansion of Mishaps</h1>
+            <p>Welcome to the most dangerous house on the block! Complete simple chores, but watch out for chaotic, unpredictable hazards.</p>
+            <p><strong>Controls:</strong> WASD or Arrow Keys to Move & Jump.</p>
+            <p>You have 5 lives to beat 5 levels. Good luck!</p>
+            <button onclick="startGame()">ENTER MANSION</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="ui-layer hidden">
+            <h1>GAME OVER</h1>
+            <p>The mansion claimed another victim.</p>
+            <button onclick="resetGame()">TRY AGAIN</button>
+        </div>
+
+        <!-- Level Transition Screen -->
+        <div id="level-screen" class="ui-layer hidden">
+            <h1 id="level-title">Level Completed!</h1>
+            <p id="level-desc">Moving to next area...</p>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="ui-layer hidden">
+            <h1>VICTORY!</h1>
+            <p>You survived the Mansion of Mishaps!</p>
+            <h2 id="final-time">Time: 00:00</h2>
+            <button onclick="resetGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements
+        const screens = {
+            start: document.getElementById('start-screen'),
+            gameOver: document.getElementById('game-over-screen'),
+            level: document.getElementById('level-screen'),
+            victory: document.getElementById('victory-screen')
+        };
+        const hudElements = {
+            lives: document.getElementById('lives-display'),
+            task: document.getElementById('task-display'),
+            time: document.getElementById('time-display')
+        };
+
+        // Game State
+        let gameState = 'START'; // START, PLAYING, TRANSITION, GAMEOVER, VICTORY
+        let currentLevelIndex = 0;
+        let lives = 5;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let lastFrameTime = 0;
+
+        // Input
+        const keys = {
+            ArrowLeft: false, ArrowRight: false, ArrowUp: false,
+            a: false, d: false, w: false, ' ': false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
+                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
+                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false;
+            }
+        });
+
+        // Touch Input for mobile support (tap left/right side to move, top to jump)
+        canvas.addEventListener('touchstart', handleTouch, {passive: false});
+        canvas.addEventListener('touchend', releaseTouch, {passive: false});
+        
+        function handleTouch(e) {
+            e.preventDefault();
+            for(let i=0; i<e.touches.length; i++){
+                const touch = e.touches[i];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (touch.clientX - rect.left) * scaleX;
+                const y = (touch.clientY - rect.top) * scaleY;
+
+                if (y < canvas.height / 2) keys['ArrowUp'] = true; // Upper half to jump
+                else if (x < canvas.width / 2) keys['ArrowLeft'] = true; // Bottom left
+                else keys['ArrowRight'] = true; // Bottom right
+            }
+        }
+        function releaseTouch(e) {
+            e.preventDefault();
+            keys['ArrowUp'] = false;
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+        }
+
+        class Player {
+            constructor(x, y) {
+                this.width = 30;
+                this.height = 30;
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.speed = 300; // pixels per second
+                this.jumpPower = -500;
+                this.gravity = 1200;
+                this.grounded = false;
+                this.emoji = '🏃‍♂️';
+                this.hitbox = { xOffset: 5, yOffset: 5, w: 20, h: 25 }; // Slightly smaller than visual
+            }
+
+            reset() {
+                this.x = this.startX;
+                this.y = this.startY;
+                this.vx = 0;
+                this.vy = 0;
+            }
+
+            update(dt, platforms) {
+                // Horizontal Movement
+                if (keys.ArrowLeft || keys.a) this.vx = -this.speed;
+                else if (keys.ArrowRight || keys.d) this.vx = this.speed;
+                else this.vx = 0;
+
+                // Jumping
+                if ((keys.ArrowUp || keys.w || keys[' ']) && this.grounded) {
+                    this.vy = this.jumpPower;
+                    this.grounded = false;
+                }
+
+                // Apply Gravity
+                this.vy += this.gravity * dt;
+
+                // Apply X Velocity & Check X Collisions
+                this.x += this.vx * dt;
+                this.checkCollisions(platforms, 'x');
+
+                // Apply Y Velocity & Check Y Collisions
+                this.y += this.vy * dt;
+                this.grounded = false;
+                this.checkCollisions(platforms, 'y');
+
+                // Screen bounds
+                if (this.x < 0) this.x = 0;
+                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+                if (this.y > canvas.height) die(); // Fell into abyss
+            }
+
+            checkCollisions(platforms, axis) {
+                let rect1 = this.getHitbox();
+                
+                for (let p of platforms) {
+                    let rect2 = { x: p.x, y: p.y, w: p.w, h: p.h };
+                    
+                    if (rect1.x < rect2.x + rect2.w &&
+                        rect1.x + rect1.w > rect2.x &&
+                        rect1.y < rect2.y + rect2.h &&
+                        rect1.y + rect1.h > rect2.y) {
+                        
+                        if (axis === 'x') {
+                            if (this.vx > 0) this.x = p.x - this.hitbox.w - this.hitbox.xOffset;
+                            else if (this.vx < 0) this.x = p.x + p.w - this.hitbox.xOffset;
+                            this.vx = 0;
+                        } else if (axis === 'y') {
+                            if (this.vy > 0) {
+                                this.y = p.y - this.hitbox.h - this.hitbox.yOffset;
+                                this.grounded = true;
+                            } else if (this.vy < 0) {
+                                this.y = p.y + p.h - this.hitbox.yOffset;
+                            }
+                            this.vy = 0;
+                        }
+                        rect1 = this.getHitbox(); // Update hitbox after adjustment
+                    }
+                }
+            }
+
+            getHitbox() {
+                return {
+                    x: this.x + this.hitbox.xOffset,
+                    y: this.y + this.hitbox.yOffset,
+                    w: this.hitbox.w,
+                    h: this.hitbox.h
+                };
+            }
+
+            draw(ctx) {
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(this.emoji, this.x, this.y);
+                
+                // Debug Hitbox
+                // ctx.strokeStyle = 'red';
+                // let hb = this.getHitbox();
+                // ctx.strokeRect(hb.x, hb.y, hb.w, hb.h);
+            }
+        }
+
+        class Platform {
+            constructor(x, y, w, h, color = '#607d8b') {
+                this.x = x; this.y = y; this.w = w; this.h = h; this.color = color;
+            }
+            draw(ctx) {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+                // Shadow/Edge for depth
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(this.x, this.y + this.h - 5, this.w, 5);
+            }
+        }
+
+        class Goal {
+            constructor(x, y, emoji, taskName) {
+                this.x = x; this.y = y; this.w = 40; this.h = 40;
+                this.emoji = emoji; this.taskName = taskName;
+            }
+            draw(ctx) {
+                ctx.font = '40px Arial';
+                ctx.fillText(this.emoji, this.x, this.y);
+                // Glow effect
+                ctx.shadowColor = 'gold';
+                ctx.shadowBlur = 10;
+                ctx.fillText(this.emoji, this.x, this.y);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Hazard {
+            constructor(type, config) {
+                this.type = type; // 'patrol', 'triggerFall', 'spawner'
+                this.x = config.x;
+                this.y = config.y;
+                this.w = config.w || 30;
+                this.h = config.h || 30;
+                this.emoji = config.emoji || '⚠️';
+                this.vx = config.vx || 0;
+                this.vy = config.vy || 0;
+                
+                // Patrol specific
+                this.minX = config.minX || 0;
+                this.maxX = config.maxX || canvas.width;
+                
+                // Trigger specific
+                this.triggerZone = config.triggerZone || null;
+                this.triggered = config.triggered || false;
+                this.gravity = config.gravity || 800;
+                
+                // Spawner specific
+                this.spawnInterval = config.spawnInterval || 2000;
+                this.timeSinceSpawn = 0;
+                this.projectiles = [];
+                this.pEmoji = config.pEmoji || '🎯';
+                this.pVx = config.pVx || 0;
+                this.pVy = config.pVy || 0;
+
+                this.hitboxOffset = 5;
+            }
+
+            update(dt, player) {
+                if (this.type === 'patrol') {
+                    this.x += this.vx * dt;
+                    if (this.x < this.minX) { this.x = this.minX; this.vx *= -1; }
+                    if (this.x + this.w > this.maxX) { this.x = this.maxX - this.w; this.vx *= -1; }
+                    this.checkPlayerCollision(player, this.x, this.y, this.w, this.h);
+                } 
+                else if (this.type === 'triggerFall') {
+                    if (!this.triggered) {
+                        let pRect = player.getHitbox();
+                        let tz = this.triggerZone;
+                        // Check if player enters trigger zone
+                        if (pRect.x < tz.x + tz.w && pRect.x + pRect.w > tz.x &&
+                            pRect.y < tz.y + tz.h && pRect.y + pRect.h > tz.y) {
+                            this.triggered = true;
+                        }
+                    } else {
+                        this.vy += this.gravity * dt;
+                        this.y += this.vy * dt;
+                        this.checkPlayerCollision(player, this.x, this.y, this.w, this.h);
+                    }
+                }
+                else if (this.type === 'spawner') {
+                    this.timeSinceSpawn += dt * 1000;
+                    if (this.timeSinceSpawn > this.spawnInterval) {
+                        this.projectiles.push({
+                            x: this.x, y: this.y, w: 20, h: 20, 
+                            vx: this.pVx, vy: this.pVy
+                        });
+                        this.timeSinceSpawn = 0;
+                    }
+                    
+                    // Update projectiles
+                    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                        let p = this.projectiles[i];
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
+                        
+                        if (this.checkPlayerCollision(player, p.x, p.y, p.w, p.h)) {
+                            this.projectiles.splice(i, 1);
+                            continue;
+                        }
+                        
+                        // Remove offscreen
+                        if (p.x < -50 || p.x > canvas.width + 50 || p.y > canvas.height + 50) {
+                            this.projectiles.splice(i, 1);
+                        }
+                    }
+                }
+            }
+
+            checkPlayerCollision(player, hx, hy, hw, hh) {
+                let p = player.getHitbox();
+                let shrink = 8; // Forgiving hitbox for hazards
+                if (p.x < (hx + hw - shrink) && 
+                    p.x + p.w > (hx + shrink) &&
+                    p.y < (hy + hh - shrink) && 
+                    p.y + p.h > (hy + shrink)) {
+                    die();
+                    return true;
+                }
+                return false;
+            }
+
+            draw(ctx) {
+                ctx.font = '30px Arial';
+                if (this.type === 'patrol' || (this.type === 'triggerFall' && this.triggered) || this.type === 'spawner') {
+                    if(this.type !== 'spawner') ctx.fillText(this.emoji, this.x, this.y);
+                }
+                
+                if (this.type === 'spawner') {
+                    ctx.font = '25px Arial';
+                    // ctx.fillText('🔫', this.x, this.y); // Optional visible spawner
+                    for (let p of this.projectiles) {
+                        ctx.fillText(this.pEmoji, p.x, p.y);
+                    }
+                }
+
+                // Debug trigger zone
+                // if (this.type === 'triggerFall' && !this.triggered && this.triggerZone) {
+                //     ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+                //     ctx.strokeRect(this.triggerZone.x, this.triggerZone.y, this.triggerZone.w, this.triggerZone.h);
+                // }
+            }
+        }
+
+        const levels = [
+            {
+                name: "The Kitchen",
+                desc: "Get the morning coffee! Watch out for the smart vacuums and loose pots.",
+                bgColor: "#ffecb3",
+                playerStart: {x: 50, y: 480},
+                goal: new Goal(720, 100, '☕', "Make Coffee"),
+                platforms: [
+                    new Platform(0, 550, 800, 50, '#795548'), // Floor
+                    new Platform(150, 450, 200, 100, '#cfd8dc'), // Counter 1
+                    new Platform(400, 350, 150, 20, '#8d6e63'), // Shelf 1
+                    new Platform(650, 150, 150, 20, '#8d6e63'), // High Shelf (Goal)
+                    new Platform(550, 250, 80, 20, '#8d6e63')  // Step
+                ],
+                hazards: [
+                    new Hazard('patrol', {x: 350, y: 520, vx: 100, minX: 350, maxX: 800, emoji: '🤖'}), // Roomba
+                    new Hazard('triggerFall', {
+                        x: 230, y: 50, emoji: '🍳', triggerZone: {x: 180, y: 400, w: 100, h: 50}
+                    }),
+                    new Hazard('triggerFall', {
+                        x: 450, y: -50, emoji: '🔪', triggerZone: {x: 400, y: 300, w: 100, h: 50}
+                    })
+                ]
+            },
+            {
+                name: "The Living Room",
+                desc: "Find the remote to watch TV. Avoid the malfunctioning automated dartboard.",
+                bgColor: "#dcedc8",
+                playerStart: {x: 50, y: 500},
+                goal: new Goal(730, 480, '📺', "Turn on TV"),
+                platforms: [
+                    new Platform(0, 550, 800, 50, '#5d4037'), // Floor
+                    new Platform(200, 400, 250, 40, '#ffcc80'), // Couch
+                    new Platform(200, 330, 50, 70, '#ffa726'), // Couch arm
+                    new Platform(400, 330, 50, 70, '#ffa726'), // Couch arm
+                    new Platform(100, 200, 150, 20, '#795548'), // Bookshelf
+                    new Platform(500, 250, 100, 20, '#795548'), // Bookshelf 2
+                    new Platform(650, 520, 150, 30, '#424242'), // TV Stand
+                ],
+                hazards: [
+                    new Hazard('spawner', {x: -20, y: 380, spawnInterval: 1500, pEmoji: '🎯', pVx: 250, pVy: 0}),
+                    new Hazard('spawner', {x: 820, y: 220, spawnInterval: 2000, pEmoji: '📚', pVx: -200, pVy: 0}),
+                    new Hazard('triggerFall', {
+                        x: 300, y: 50, emoji: '💡', triggerZone: {x: 250, y: 350, w: 150, h: 50}
+                    })
+                ]
+            },
+            {
+                name: "The Bathroom",
+                desc: "Nature calls. But why are there flying plungers?",
+                bgColor: "#e3f2fd",
+                playerStart: {x: 30, y: 100},
+                goal: new Goal(700, 500, '🚽', "Use Toilet"),
+                platforms: [
+                    new Platform(0, 150, 150, 20, '#eceff1'), // Start high
+                    new Platform(200, 250, 100, 20, '#eceff1'),
+                    new Platform(350, 350, 100, 20, '#eceff1'),
+                    new Platform(500, 450, 100, 20, '#eceff1'),
+                    new Platform(650, 550, 150, 50, '#90a4ae'), // Floor area
+                    new Platform(0, 550, 200, 50, '#90a4ae'), // Pit trap base
+                ],
+                hazards: [
+                    new Hazard('patrol', {x: 10, y: 520, vx: 80, minX: 0, maxX: 200, emoji: '🦀'}),
+                    new Hazard('spawner', {x: -30, y: 220, spawnInterval: 1200, pEmoji: '🪠', pVx: 200, pVy: 100}), // Arcing plunger
+                    new Hazard('spawner', {x: 830, y: 300, spawnInterval: 1800, pEmoji: '🫧', pVx: -150, pVy: -50}),
+                    new Hazard('triggerFall', {
+                        x: 400, y: -20, emoji: '🧴', triggerZone: {x: 300, y: 250, w: 200, h: 100}, gravity: 1200
+                    })
+                ]
+            },
+            {
+                name: "The Bedroom",
+                desc: "Turn off that annoying alarm! The ceiling fan is acting up.",
+                bgColor: "#ede7f6",
+                playerStart: {x: 50, y: 480},
+                goal: new Goal(50, 100, '⏰', "Stop Alarm"),
+                platforms: [
+                    new Platform(0, 550, 800, 50, '#5c2a18'), // Floor
+                    new Platform(200, 450, 300, 100, '#b39ddb'), // Bed
+                    new Platform(600, 300, 150, 250, '#795548'), // Wardrobe
+                    new Platform(350, 200, 100, 20, '#8d6e63'), // Floating shelf
+                    new Platform(150, 250, 80, 20, '#8d6e63'),
+                    new Platform(0, 150, 100, 20, '#8d6e63'), // Nightstand (Goal)
+                ],
+                hazards: [
+                    new Hazard('spawner', {x: 400, y: 0, spawnInterval: 800, pEmoji: '🧦', pVx: 0, pVy: 250}), // Dropping socks
+                    new Hazard('patrol', {x: 200, y: 420, vx: 150, minX: 200, maxX: 470, emoji: '🐈'}), // Cat on bed
+                    new Hazard('triggerFall', {
+                        x: 650, y: 0, emoji: '👕', triggerZone: {x: 550, y: 250, w: 100, h: 50}
+                    }),
+                    new Hazard('spawner', {x: 820, y: 150, spawnInterval: 2500, pEmoji: '🦇', pVx: -250, pVy: 0}) // Bat?
+                ]
+            },
+            {
+                name: "The Yard",
+                desc: "Just get the mail. It's absolute chaos outside.",
+                bgColor: "#e8f5e9",
+                playerStart: {x: 50, y: 480},
+                goal: new Goal(720, 480, '📬', "Get Mail"),
+                platforms: [
+                    new Platform(0, 550, 800, 50, '#388e3c'), // Grass
+                    new Platform(200, 400, 80, 20, '#795548'), // Branches
+                    new Platform(350, 300, 80, 20, '#795548'),
+                    new Platform(500, 200, 80, 20, '#795548'),
+                    new Platform(150, 150, 60, 20, '#795548'),
+                ],
+                hazards: [
+                    new Hazard('patrol', {x: 200, y: 520, vx: 200, minX: 100, maxX: 700, emoji: '🚜'}), // Lawnmower fast
+                    new Hazard('spawner', {x: -50, y: 100, spawnInterval: 1000, pEmoji: '🐦', pVx: 300, pVy: 50}),
+                    new Hazard('triggerFall', {
+                        x: 220, y: 200, emoji: '🍎', triggerZone: {x: 180, y: 350, w: 80, h: 50}
+                    }),
+                    new Hazard('triggerFall', {
+                        x: 370, y: 100, emoji: '🍎', triggerZone: {x: 330, y: 250, w: 80, h: 50}
+                    }),
+                    new Hazard('triggerFall', {
+                        x: 650, y: 0, emoji: '🦅', triggerZone: {x: 550, y: 450, w: 200, h: 100}, gravity: 1500
+                    })
+                ]
+            }
+        ];
+
+        let player = new Player(0, 0);
+        let currentLevel = null;
+
+        function loadLevel(index) {
+            if (index >= levels.length) {
+                winGame();
+                return;
+            }
+            const data = levels[index];
+            currentLevel = {
+                name: data.name,
+                bgColor: data.bgColor,
+                goal: data.goal,
+                platforms: data.platforms,
+                hazards: data.hazards.map(h => new Hazard(h.type, h)) // Deep copy hazards to reset states
+            };
+            player.startX = data.playerStart.x;
+            player.startY = data.playerStart.y;
+            player.reset();
+            
+            hudElements.task.textContent = `Task: ${data.goal.taskName}`;
+            hudElements.task.style.color = '#ffeb3b';
+        }
+
+        function startGame() {
+            gameState = 'PLAYING';
+            currentLevelIndex = 0;
+            lives = 5;
+            updateLivesHUD();
+            startTime = Date.now();
+            elapsedTime = 0;
+            
+            screens.start.classList.add('hidden');
+            screens.gameOver.classList.add('hidden');
+            screens.victory.classList.add('hidden');
+            
+            loadLevel(currentLevelIndex);
+            
+            timerInterval = setInterval(() => {
+                if (gameState === 'PLAYING') {
+                    elapsedTime = Date.now() - startTime;
+                    let seconds = Math.floor((elapsedTime / 1000) % 60);
+                    let minutes = Math.floor((elapsedTime / 1000) / 60);
+                    hudElements.time.textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+
+            lastFrameTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            startGame();
+        }
+
+        function updateLivesHUD() {
+            hudElements.lives.textContent = 'Lives: ' + '❤️'.repeat(lives);
+        }
+
+        function die() {
+            if (gameState !== 'PLAYING') return;
+            lives--;
+            updateLivesHUD();
+            
+            if (lives <= 0) {
+                gameState = 'GAMEOVER';
+                screens.gameOver.classList.remove('hidden');
+                clearInterval(timerInterval);
+            } else {
+                // Screen shake effect logic could go here
+                ctx.fillStyle = 'rgba(255,0,0,0.5)';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                
+                // Reset level state slightly delayed or immediately
+                setTimeout(() => {
+                    if(gameState === 'PLAYING') loadLevel(currentLevelIndex);
+                }, 100);
+            }
+        }
+
+        function completeLevel() {
+            gameState = 'TRANSITION';
+            hudElements.task.textContent = 'COMPLETED!';
+            hudElements.task.style.color = '#4caf50';
+            
+            document.getElementById('level-title').textContent = `${levels[currentLevelIndex].name} Conquered!`;
+            document.getElementById('level-desc').textContent = levels[currentLevelIndex].desc;
+            screens.level.classList.remove('hidden');
+
+            setTimeout(() => {
+                currentLevelIndex++;
+                if (currentLevelIndex < levels.length) {
+                    screens.level.classList.add('hidden');
+                    loadLevel(currentLevelIndex);
+                    gameState = 'PLAYING';
+                    lastFrameTime = performance.now();
+                    requestAnimationFrame(gameLoop);
+                } else {
+                    screens.level.classList.add('hidden');
+                    winGame();
+                }
+            }, 2500);
+        }
+
+        function winGame() {
+            gameState = 'VICTORY';
+            clearInterval(timerInterval);
+            let seconds = Math.floor((elapsedTime / 1000) % 60);
+            let minutes = Math.floor((elapsedTime / 1000) / 60);
+            document.getElementById('final-time').textContent = 
+                `Total Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            screens.victory.classList.remove('hidden');
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState !== 'PLAYING') return;
+
+            const dt = (timestamp - lastFrameTime) / 1000;
+            lastFrameTime = timestamp;
+
+            // Cap dt to prevent physics explosions on lag
+            if (dt > 0.1) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // Update
+            player.update(dt, currentLevel.platforms);
+            
+            for (let hazard of currentLevel.hazards) {
+                hazard.update(dt, player);
+            }
+
+            // Check Goal Collision
+            let p = player.getHitbox();
+            let g = currentLevel.goal;
+            if (p.x < g.x + g.w && p.x + p.w > g.x &&
+                p.y < g.y + g.h && p.y + p.h > g.y) {
+                completeLevel();
+                return; // Stop current loop execution
+            }
+
+            // Draw
+            ctx.fillStyle = currentLevel.bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background decorative elements (optional grid/patterns)
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            for(let i=0; i<canvas.width; i+=40) ctx.fillRect(i, 0, 1, canvas.height);
+            for(let i=0; i<canvas.height; i+=40) ctx.fillRect(0, i, canvas.width, 1);
+
+            for (let platform of currentLevel.platforms) {
+                platform.draw(ctx);
+            }
+
+            currentLevel.goal.draw(ctx);
+
+            for (let hazard of currentLevel.hazards) {
+                hazard.draw(ctx);
+            }
+
+            player.draw(ctx);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initial drawing for start screen background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    </script>
+</body>
+</html>
