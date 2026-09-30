@@ -3,803 +3,769 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mansion of Mishaps</title>
+    <title>Kinematic Analysis Testbed</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a2e;
-            color: #fff;
-            font-family: 'Nunito', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'JetBrains Mono', monospace;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
             overflow: hidden;
             touch-action: none;
         }
 
-        #game-container {
+        #dashboard-container {
+            width: 900px;
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #telemetry-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0d1117;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .telemetry-module {
+            display: flex;
+            gap: 20px;
+        }
+
+        .data-point {
+            background: #21262d;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #30363d;
+            font-size: 0.9rem;
+        }
+
+        .data-label {
+            color: #8b949e;
+            margin-right: 8px;
+        }
+
+        .data-value {
+            color: #58a6ff;
+            font-weight: bold;
+        }
+
+        #warning-value {
+            color: #ff7b72;
+        }
+
+        #success-value {
+            color: #3fb950;
+        }
+
+        #simulation-viewport {
             position: relative;
-            width: 800px;
+            width: 100%;
             height: 600px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            border-radius: 10px;
+            background-color: #010409;
             overflow: hidden;
-            background-color: #e0f7fa;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
-            image-rendering: pixelated;
         }
 
-        .ui-layer {
+        .overlay-panel {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: rgba(13, 17, 23, 0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(26, 26, 46, 0.9);
-            z-index: 10;
+            z-index: 100;
             text-align: center;
-            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .hidden {
+        .hidden-state {
             display: none !important;
         }
 
         h1 {
-            font-family: 'Fredoka One', cursive;
-            font-size: 3.5rem;
-            margin-bottom: 0.5rem;
-            color: #ffb400;
-            text-shadow: 3px 3px 0 #c2185b;
+            color: #58a6ff;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            color: #8b949e;
+            font-size: 1.2rem;
+            font-weight: normal;
+            margin-bottom: 30px;
         }
 
         p {
-            font-size: 1.2rem;
             max-width: 600px;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
+            line-height: 1.6;
+            color: #c9d1d9;
+            margin-bottom: 20px;
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            font-family: 'Fredoka One', cursive;
-            background-color: #ffb400;
-            color: #1a1a2e;
-            border: none;
-            border-radius: 8px;
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 6px;
             cursor: pointer;
-            box-shadow: 0 5px 0 #c28e00;
-            transition: transform 0.1s, box-shadow 0.1s;
+            transition: background-color 0.2s;
+            font-weight: bold;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 0 #c28e00;
+            background-color: #2ea043;
         }
 
-        button:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #c28e00;
+        /* Diagnostic Grid Background */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(48, 54, 61, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(48, 54, 61, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        /* HUD Styling */
-        #hud {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            box-sizing: border-box;
-            pointer-events: none;
-            z-index: 5;
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.5rem;
-            text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-        }
-
-        .hud-item {
-            background: rgba(0,0,0,0.4);
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-        
-        #task-display {
-            color: #ffeb3b;
-        }
-
-        /* Mobile Controls (Hidden by default, shown via media query if needed, but keeping it keyboard focus for now per request, add basic touch support just in case) */
-        #mobile-controls {
-            display: none;
-        }
-
-        @media (max-width: 850px) {
-            #game-container {
+        @media (max-width: 950px) {
+            #dashboard-container {
                 width: 100vw;
-                height: 75vw; /* maintain 4:3 aspect ratio */
-                max-height: 100vh;
+                height: 100vh;
+                border: none;
                 border-radius: 0;
+            }
+            #simulation-viewport {
+                height: calc(100vh - 60px);
             }
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        
-        <div id="hud">
-            <div class="hud-item" id="lives-display">Lives: ❤️❤️❤️❤️❤️</div>
-            <div class="hud-item" id="task-display">Task: ???</div>
-            <div class="hud-item" id="time-display">00:00</div>
+    <div id="dashboard-container">
+        <div id="telemetry-header">
+            <div style="font-weight: bold; color: #8b949e;">KINEMATIC_ANALYSIS_V1.5</div>
+            <div class="telemetry-module">
+                <div class="data-point">
+                    <span class="data-label">ENVIRONMENT:</span>
+                    <span class="data-value" id="env-display">01/05</span>
+                </div>
+                <div class="data-point">
+                    <span class="data-label">ITERATIONS:</span>
+                    <span class="data-value" id="iteration-display" style="color: #3fb950;">5</span>
+                </div>
+                <div class="data-point">
+                    <span class="data-label">UPTIME:</span>
+                    <span class="data-value" id="uptime-display">00.00s</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Start Screen -->
-        <div id="start-screen" class="ui-layer">
-            <h1>Mansion of Mishaps</h1>
-            <p>Welcome to the most dangerous house on the block! Complete simple chores, but watch out for chaotic, unpredictable hazards.</p>
-            <p><strong>Controls:</strong> WASD or Arrow Keys to Move & Jump.</p>
-            <p>You have 5 lives to beat 5 levels. Good luck!</p>
-            <button onclick="startGame()">ENTER MANSION</button>
-        </div>
+        <div id="simulation-viewport" class="grid-bg">
+            <canvas id="analysisCanvas" width="900" height="600"></canvas>
+            
+            <!-- Initialization Screen -->
+            <div id="panel-initialization" class="overlay-panel">
+                <h1>Kinematic Analysis Testbed</h1>
+                <h2>Autonomous Agent Navigation Protocol</h2>
+                <p><strong>Objective:</strong> Guide the Autonomous Agent (🤖) to the Calibration Zone (✅) while avoiding Dynamic Obstacles (⚠️).</p>
+                <p><strong>Input Parameters:</strong> Use standard W,A,S,D or Arrow directional vectors to apply force.</p>
+                <p>The system is permitted 5 sequence iterations before mandatory termination.</p>
+                <button onclick="executeSimulation()">INITIALIZE SEQUENCE</button>
+            </div>
 
-        <!-- Game Over Screen -->
-        <div id="game-over-screen" class="ui-layer hidden">
-            <h1>GAME OVER</h1>
-            <p>The mansion claimed another victim.</p>
-            <button onclick="resetGame()">TRY AGAIN</button>
-        </div>
+            <!-- Termination Screen -->
+            <div id="panel-termination" class="overlay-panel hidden-state">
+                <h1 style="color: #ff7b72;">CRITICAL FAILURE</h1>
+                <h2>Iteration Threshold Exceeded</h2>
+                <p>The Autonomous Agent suffered catastrophic structural failure.</p>
+                <button onclick="resetSystem()">RECALIBRATE & RESTART</button>
+            </div>
 
-        <!-- Level Transition Screen -->
-        <div id="level-screen" class="ui-layer hidden">
-            <h1 id="level-title">Level Completed!</h1>
-            <p id="level-desc">Moving to next area...</p>
-        </div>
+            <!-- Transition Screen -->
+            <div id="panel-transition" class="overlay-panel hidden-state">
+                <h1 style="color: #3fb950;">CALIBRATION SUCCESSFUL</h1>
+                <h2 id="transition-log">Proceeding to next environment...</h2>
+            </div>
 
-        <!-- Victory Screen -->
-        <div id="victory-screen" class="ui-layer hidden">
-            <h1>VICTORY!</h1>
-            <p>You survived the Mansion of Mishaps!</p>
-            <h2 id="final-time">Time: 00:00</h2>
-            <button onclick="resetGame()">PLAY AGAIN</button>
+            <!-- Conclusion Screen -->
+            <div id="panel-conclusion" class="overlay-panel hidden-state">
+                <h1 style="color: #a371f7;">ANALYSIS COMPLETE</h1>
+                <h2>All environments navigated successfully.</h2>
+                <p>Total Elapsed Uptime: <strong id="final-uptime-metric">00.00s</strong></p>
+                <button onclick="resetSystem()">BEGIN NEW DATA COLLECTION</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
+        const canvas = document.getElementById('analysisCanvas');
         const ctx = canvas.getContext('2d');
 
-        // UI Elements
-        const screens = {
-            start: document.getElementById('start-screen'),
-            gameOver: document.getElementById('game-over-screen'),
-            level: document.getElementById('level-screen'),
-            victory: document.getElementById('victory-screen')
+        // UI Panels
+        const panels = {
+            init: document.getElementById('panel-initialization'),
+            term: document.getElementById('panel-termination'),
+            trans: document.getElementById('panel-transition'),
+            conc: document.getElementById('panel-conclusion')
         };
-        const hudElements = {
-            lives: document.getElementById('lives-display'),
-            task: document.getElementById('task-display'),
-            time: document.getElementById('time-display')
+        const telemetry = {
+            env: document.getElementById('env-display'),
+            iter: document.getElementById('iteration-display'),
+            uptime: document.getElementById('uptime-display')
         };
 
-        // Game State
-        let gameState = 'START'; // START, PLAYING, TRANSITION, GAMEOVER, VICTORY
-        let currentLevelIndex = 0;
-        let lives = 5;
-        let startTime = 0;
-        let elapsedTime = 0;
-        let timerInterval = null;
-        let lastFrameTime = 0;
+        // Core System State
+        let systemState = 'STANDBY'; // STANDBY, ACTIVE, PROCESSING, TERMINATED, CONCLUDED
+        let currentEnvIndex = 0;
+        let availableIterations = 5;
+        let uptimeStart = 0;
+        let elapsedMilliseconds = 0;
+        let clockInterval = null;
+        let previousTimestamp = 0;
 
-        // Input
-        const keys = {
-            ArrowLeft: false, ArrowRight: false, ArrowUp: false,
-            a: false, d: false, w: false, ' ': false
+        // Input Telemetry Vector
+        const inputVector = {
+            Left: false, Right: false, Up: false
         };
 
         window.addEventListener('keydown', (e) => {
-            if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
-                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
-            }
+            if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputVector.Left = true;
+            if (['ArrowRight', 'd', 'D'].includes(e.key)) inputVector.Right = true;
+            if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputVector.Up = true;
         });
         window.addEventListener('keyup', (e) => {
-            if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
-                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false;
-            }
+            if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputVector.Left = false;
+            if (['ArrowRight', 'd', 'D'].includes(e.key)) inputVector.Right = false;
+            if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputVector.Up = false;
         });
 
-        // Touch Input for mobile support (tap left/right side to move, top to jump)
-        canvas.addEventListener('touchstart', handleTouch, {passive: false});
-        canvas.addEventListener('touchend', releaseTouch, {passive: false});
-        
-        function handleTouch(e) {
+        // Touch constraints for field testing (mobile)
+        canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             for(let i=0; i<e.touches.length; i++){
                 const touch = e.touches[i];
                 const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const x = (touch.clientX - rect.left) * scaleX;
-                const y = (touch.clientY - rect.top) * scaleY;
-
-                if (y < canvas.height / 2) keys['ArrowUp'] = true; // Upper half to jump
-                else if (x < canvas.width / 2) keys['ArrowLeft'] = true; // Bottom left
-                else keys['ArrowRight'] = true; // Bottom right
+                const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                if (y < canvas.height / 2) inputVector.Up = true;
+                else if (x < canvas.width / 2) inputVector.Left = true;
+                else inputVector.Right = true;
             }
-        }
-        function releaseTouch(e) {
+        }, {passive: false});
+        
+        canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
-            keys['ArrowUp'] = false;
-            keys['ArrowLeft'] = false;
-            keys['ArrowRight'] = false;
-        }
+            inputVector.Up = false; inputVector.Left = false; inputVector.Right = false;
+        }, {passive: false});
 
-        class Player {
+        class AutonomousAgent {
             constructor(x, y) {
+                this.originX = x;
+                this.originY = y;
                 this.width = 30;
                 this.height = 30;
-                this.startX = x;
-                this.startY = y;
                 this.x = x;
                 this.y = y;
-                this.vx = 0;
-                this.vy = 0;
-                this.speed = 300; // pixels per second
-                this.jumpPower = -500;
-                this.gravity = 1200;
-                this.grounded = false;
-                this.emoji = '🏃‍♂️';
-                this.hitbox = { xOffset: 5, yOffset: 5, w: 20, h: 25 }; // Slightly smaller than visual
+                this.velX = 0;
+                this.velY = 0;
+                this.thrust = 320; 
+                this.verticalImpulse = -550;
+                this.gravitationalConstant = 1300;
+                this.isSupported = false;
+                this.identifier = '🤖';
+                this.collisionTolerance = { xOff: 4, yOff: 4, w: 22, h: 26 };
             }
 
-            reset() {
-                this.x = this.startX;
-                this.y = this.startY;
-                this.vx = 0;
-                this.vy = 0;
+            restoreOrigin() {
+                this.x = this.originX;
+                this.y = this.originY;
+                this.velX = 0;
+                this.velY = 0;
             }
 
-            update(dt, platforms) {
-                // Horizontal Movement
-                if (keys.ArrowLeft || keys.a) this.vx = -this.speed;
-                else if (keys.ArrowRight || keys.d) this.vx = this.speed;
-                else this.vx = 0;
+            calculateKinematics(deltaTime, staticBoundaries) {
+                // Lateral Force Application
+                if (inputVector.Left) this.velX = -this.thrust;
+                else if (inputVector.Right) this.velX = this.thrust;
+                else this.velX = 0;
 
-                // Jumping
-                if ((keys.ArrowUp || keys.w || keys[' ']) && this.grounded) {
-                    this.vy = this.jumpPower;
-                    this.grounded = false;
+                // Vertical Force Application
+                if (inputVector.Up && this.isSupported) {
+                    this.velY = this.verticalImpulse;
+                    this.isSupported = false;
                 }
 
-                // Apply Gravity
-                this.vy += this.gravity * dt;
+                // Apply Gravitational Acceleration
+                this.velY += this.gravitationalConstant * deltaTime;
 
-                // Apply X Velocity & Check X Collisions
-                this.x += this.vx * dt;
-                this.checkCollisions(platforms, 'x');
+                // X-Axis Transformation & Verification
+                this.x += this.velX * deltaTime;
+                this.verifyStructuralIntegrity(staticBoundaries, 'X');
 
-                // Apply Y Velocity & Check Y Collisions
-                this.y += this.vy * dt;
-                this.grounded = false;
-                this.checkCollisions(platforms, 'y');
+                // Y-Axis Transformation & Verification
+                this.y += this.velY * deltaTime;
+                this.isSupported = false;
+                this.verifyStructuralIntegrity(staticBoundaries, 'Y');
 
-                // Screen bounds
+                // Viewport Containment
                 if (this.x < 0) this.x = 0;
                 if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-                if (this.y > canvas.height) die(); // Fell into abyss
+                if (this.y > canvas.height + 50) triggerSystemReset(); // Out of bounds
             }
 
-            checkCollisions(platforms, axis) {
-                let rect1 = this.getHitbox();
+            verifyStructuralIntegrity(boundaries, axis) {
+                let rect = this.getSpatialCoordinates();
                 
-                for (let p of platforms) {
-                    let rect2 = { x: p.x, y: p.y, w: p.w, h: p.h };
-                    
-                    if (rect1.x < rect2.x + rect2.w &&
-                        rect1.x + rect1.w > rect2.x &&
-                        rect1.y < rect2.y + rect2.h &&
-                        rect1.y + rect1.h > rect2.y) {
+                for (let boundary of boundaries) {
+                    if (rect.x < boundary.x + boundary.w &&
+                        rect.x + rect.w > boundary.x &&
+                        rect.y < boundary.y + boundary.h &&
+                        rect.y + rect.h > boundary.y) {
                         
-                        if (axis === 'x') {
-                            if (this.vx > 0) this.x = p.x - this.hitbox.w - this.hitbox.xOffset;
-                            else if (this.vx < 0) this.x = p.x + p.w - this.hitbox.xOffset;
-                            this.vx = 0;
-                        } else if (axis === 'y') {
-                            if (this.vy > 0) {
-                                this.y = p.y - this.hitbox.h - this.hitbox.yOffset;
-                                this.grounded = true;
-                            } else if (this.vy < 0) {
-                                this.y = p.y + p.h - this.hitbox.yOffset;
+                        if (axis === 'X') {
+                            if (this.velX > 0) this.x = boundary.x - this.collisionTolerance.w - this.collisionTolerance.xOff;
+                            else if (this.velX < 0) this.x = boundary.x + boundary.w - this.collisionTolerance.xOff;
+                            this.velX = 0;
+                        } else if (axis === 'Y') {
+                            if (this.velY > 0) {
+                                this.y = boundary.y - this.collisionTolerance.h - this.collisionTolerance.yOff;
+                                this.isSupported = true;
+                            } else if (this.velY < 0) {
+                                this.y = boundary.y + boundary.h - this.collisionTolerance.yOff;
                             }
-                            this.vy = 0;
+                            this.velY = 0;
                         }
-                        rect1 = this.getHitbox(); // Update hitbox after adjustment
+                        rect = this.getSpatialCoordinates(); 
                     }
                 }
             }
 
-            getHitbox() {
+            getSpatialCoordinates() {
                 return {
-                    x: this.x + this.hitbox.xOffset,
-                    y: this.y + this.hitbox.yOffset,
-                    w: this.hitbox.w,
-                    h: this.hitbox.h
+                    x: this.x + this.collisionTolerance.xOff,
+                    y: this.y + this.collisionTolerance.yOff,
+                    w: this.collisionTolerance.w,
+                    h: this.collisionTolerance.h
                 };
             }
 
-            draw(ctx) {
-                ctx.font = '30px Arial';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'top';
-                ctx.fillText(this.emoji, this.x, this.y);
-                
-                // Debug Hitbox
-                // ctx.strokeStyle = 'red';
-                // let hb = this.getHitbox();
-                // ctx.strokeRect(hb.x, hb.y, hb.w, hb.h);
+            render(context) {
+                context.font = '30px "JetBrains Mono"';
+                context.textAlign = 'left';
+                context.textBaseline = 'top';
+                context.fillText(this.identifier, this.x, this.y);
             }
         }
 
-        class Platform {
-            constructor(x, y, w, h, color = '#607d8b') {
+        class StaticBoundary {
+            constructor(x, y, w, h, color = '#30363d') {
                 this.x = x; this.y = y; this.w = w; this.h = h; this.color = color;
             }
-            draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                // Shadow/Edge for depth
-                ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                ctx.fillRect(this.x, this.y + this.h - 5, this.w, 5);
+            render(context) {
+                context.fillStyle = this.color;
+                context.fillRect(this.x, this.y, this.w, this.h);
+                // Render top edge highlight for depth
+                context.fillStyle = 'rgba(255,255,255,0.05)';
+                context.fillRect(this.x, this.y, this.w, 4);
             }
         }
 
-        class Goal {
-            constructor(x, y, emoji, taskName) {
+        class CalibrationZone {
+            constructor(x, y) {
                 this.x = x; this.y = y; this.w = 40; this.h = 40;
-                this.emoji = emoji; this.taskName = taskName;
+                this.identifier = '✅';
             }
-            draw(ctx) {
-                ctx.font = '40px Arial';
-                ctx.fillText(this.emoji, this.x, this.y);
-                // Glow effect
-                ctx.shadowColor = 'gold';
-                ctx.shadowBlur = 10;
-                ctx.fillText(this.emoji, this.x, this.y);
-                ctx.shadowBlur = 0;
+            render(context) {
+                context.font = '40px "JetBrains Mono"';
+                context.fillText(this.identifier, this.x, this.y);
+                context.shadowColor = '#3fb950';
+                context.shadowBlur = 15;
+                context.fillText(this.identifier, this.x, this.y);
+                context.shadowBlur = 0;
             }
         }
 
-        class Hazard {
-            constructor(type, config) {
-                this.type = type; // 'patrol', 'triggerFall', 'spawner'
-                this.x = config.x;
-                this.y = config.y;
-                this.w = config.w || 30;
-                this.h = config.h || 30;
-                this.emoji = config.emoji || '⚠️';
-                this.vx = config.vx || 0;
-                this.vy = config.vy || 0;
+        class DynamicObstacle {
+            constructor(configuration) {
+                this.behavior = configuration.behavior; // 'oscillate', 'proximityDrop', 'particleEmitter'
+                this.x = configuration.x;
+                this.y = configuration.y;
+                this.w = 30;
+                this.h = 30;
+                this.identifier = '⚠️';
+                this.velX = configuration.velX || 0;
+                this.velY = configuration.velY || 0;
                 
-                // Patrol specific
-                this.minX = config.minX || 0;
-                this.maxX = config.maxX || canvas.width;
+                // Oscillation Config
+                this.minBoundX = configuration.minBoundX || 0;
+                this.maxBoundX = configuration.maxBoundX || canvas.width;
                 
-                // Trigger specific
-                this.triggerZone = config.triggerZone || null;
-                this.triggered = config.triggered || false;
-                this.gravity = config.gravity || 800;
+                // Proximity Drop Config
+                this.sensorArea = configuration.sensorArea || null;
+                this.isActivated = false;
+                this.gravityForce = configuration.gravityForce || 900;
                 
-                // Spawner specific
-                this.spawnInterval = config.spawnInterval || 2000;
-                this.timeSinceSpawn = 0;
-                this.projectiles = [];
-                this.pEmoji = config.pEmoji || '🎯';
-                this.pVx = config.pVx || 0;
-                this.pVy = config.pVy || 0;
-
-                this.hitboxOffset = 5;
+                // Particle Emitter Config
+                this.emissionRate = configuration.emissionRate || 2000;
+                this.elapsedSinceEmission = 0;
+                this.activeParticles = [];
+                this.particleIdent = '🔴';
+                this.particleVelX = configuration.particleVelX || 0;
+                this.particleVelY = configuration.particleVelY || 0;
             }
 
-            update(dt, player) {
-                if (this.type === 'patrol') {
-                    this.x += this.vx * dt;
-                    if (this.x < this.minX) { this.x = this.minX; this.vx *= -1; }
-                    if (this.x + this.w > this.maxX) { this.x = this.maxX - this.w; this.vx *= -1; }
-                    this.checkPlayerCollision(player, this.x, this.y, this.w, this.h);
+            processBehaviors(deltaTime, agentRef) {
+                if (this.behavior === 'oscillate') {
+                    this.x += this.velX * deltaTime;
+                    if (this.x < this.minBoundX) { this.x = this.minBoundX; this.velX *= -1; }
+                    if (this.x + this.w > this.maxBoundX) { this.x = this.maxBoundX - this.w; this.velX *= -1; }
+                    this.detectIntersection(agentRef, this.x, this.y, this.w, this.h);
                 } 
-                else if (this.type === 'triggerFall') {
-                    if (!this.triggered) {
-                        let pRect = player.getHitbox();
-                        let tz = this.triggerZone;
-                        // Check if player enters trigger zone
-                        if (pRect.x < tz.x + tz.w && pRect.x + pRect.w > tz.x &&
-                            pRect.y < tz.y + tz.h && pRect.y + pRect.h > tz.y) {
-                            this.triggered = true;
+                else if (this.behavior === 'proximityDrop') {
+                    if (!this.isActivated) {
+                        let agentCoords = agentRef.getSpatialCoordinates();
+                        let sensor = this.sensorArea;
+                        if (agentCoords.x < sensor.x + sensor.w && agentCoords.x + agentCoords.w > sensor.x &&
+                            agentCoords.y < sensor.y + sensor.h && agentCoords.y + agentCoords.h > sensor.y) {
+                            this.isActivated = true;
                         }
                     } else {
-                        this.vy += this.gravity * dt;
-                        this.y += this.vy * dt;
-                        this.checkPlayerCollision(player, this.x, this.y, this.w, this.h);
+                        this.velY += this.gravityForce * deltaTime;
+                        this.y += this.velY * deltaTime;
+                        this.detectIntersection(agentRef, this.x, this.y, this.w, this.h);
                     }
                 }
-                else if (this.type === 'spawner') {
-                    this.timeSinceSpawn += dt * 1000;
-                    if (this.timeSinceSpawn > this.spawnInterval) {
-                        this.projectiles.push({
-                            x: this.x, y: this.y, w: 20, h: 20, 
-                            vx: this.pVx, vy: this.pVy
+                else if (this.behavior === 'particleEmitter') {
+                    this.elapsedSinceEmission += deltaTime * 1000;
+                    if (this.elapsedSinceEmission > this.emissionRate) {
+                        this.activeParticles.push({
+                            x: this.x, y: this.y, w: 15, h: 15, 
+                            vX: this.particleVelX, vY: this.particleVelY
                         });
-                        this.timeSinceSpawn = 0;
+                        this.elapsedSinceEmission = 0;
                     }
                     
-                    // Update projectiles
-                    for (let i = this.projectiles.length - 1; i >= 0; i--) {
-                        let p = this.projectiles[i];
-                        p.x += p.vx * dt;
-                        p.y += p.vy * dt;
+                    for (let i = this.activeParticles.length - 1; i >= 0; i--) {
+                        let p = this.activeParticles[i];
+                        p.x += p.vX * deltaTime;
+                        p.y += p.vY * deltaTime;
                         
-                        if (this.checkPlayerCollision(player, p.x, p.y, p.w, p.h)) {
-                            this.projectiles.splice(i, 1);
+                        if (this.detectIntersection(agentRef, p.x, p.y, p.w, p.h)) {
+                            this.activeParticles.splice(i, 1);
                             continue;
                         }
                         
-                        // Remove offscreen
+                        // Clear out of bounds particles
                         if (p.x < -50 || p.x > canvas.width + 50 || p.y > canvas.height + 50) {
-                            this.projectiles.splice(i, 1);
+                            this.activeParticles.splice(i, 1);
                         }
                     }
                 }
             }
 
-            checkPlayerCollision(player, hx, hy, hw, hh) {
-                let p = player.getHitbox();
-                let shrink = 8; // Forgiving hitbox for hazards
-                if (p.x < (hx + hw - shrink) && 
-                    p.x + p.w > (hx + shrink) &&
-                    p.y < (hy + hh - shrink) && 
-                    p.y + p.h > (hy + shrink)) {
-                    die();
+            detectIntersection(agentRef, obsX, obsY, obsW, obsH) {
+                let a = agentRef.getSpatialCoordinates();
+                let tolerance = 6; 
+                if (a.x < (obsX + obsW - tolerance) && 
+                    a.x + a.w > (obsX + tolerance) &&
+                    a.y < (obsY + obsH - tolerance) && 
+                    a.y + a.h > (obsY + tolerance)) {
+                    triggerSystemReset();
                     return true;
                 }
                 return false;
             }
 
-            draw(ctx) {
-                ctx.font = '30px Arial';
-                if (this.type === 'patrol' || (this.type === 'triggerFall' && this.triggered) || this.type === 'spawner') {
-                    if(this.type !== 'spawner') ctx.fillText(this.emoji, this.x, this.y);
+            render(context) {
+                context.font = '30px "JetBrains Mono"';
+                if (this.behavior === 'oscillate' || (this.behavior === 'proximityDrop' && this.isActivated) || this.behavior === 'particleEmitter') {
+                    if(this.behavior !== 'particleEmitter') context.fillText(this.identifier, this.x, this.y);
                 }
                 
-                if (this.type === 'spawner') {
-                    ctx.font = '25px Arial';
-                    // ctx.fillText('🔫', this.x, this.y); // Optional visible spawner
-                    for (let p of this.projectiles) {
-                        ctx.fillText(this.pEmoji, p.x, p.y);
+                if (this.behavior === 'particleEmitter') {
+                    context.font = '20px "JetBrains Mono"';
+                    // Render base unit structure
+                    context.fillStyle = '#ff7b72';
+                    context.fillRect(this.x + 5, this.y + 5, 20, 20);
+                    for (let p of this.activeParticles) {
+                        context.fillText(this.particleIdent, p.x, p.y);
                     }
                 }
-
-                // Debug trigger zone
-                // if (this.type === 'triggerFall' && !this.triggered && this.triggerZone) {
-                //     ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
-                //     ctx.strokeRect(this.triggerZone.x, this.triggerZone.y, this.triggerZone.w, this.triggerZone.h);
-                // }
             }
         }
 
-        const levels = [
+        const environmentData = [
             {
-                name: "The Kitchen",
-                desc: "Get the morning coffee! Watch out for the smart vacuums and loose pots.",
-                bgColor: "#ffecb3",
-                playerStart: {x: 50, y: 480},
-                goal: new Goal(720, 100, '☕', "Make Coffee"),
-                platforms: [
-                    new Platform(0, 550, 800, 50, '#795548'), // Floor
-                    new Platform(150, 450, 200, 100, '#cfd8dc'), // Counter 1
-                    new Platform(400, 350, 150, 20, '#8d6e63'), // Shelf 1
-                    new Platform(650, 150, 150, 20, '#8d6e63'), // High Shelf (Goal)
-                    new Platform(550, 250, 80, 20, '#8d6e63')  // Step
+                designation: "Linear Trajectory Calibration",
+                originData: {x: 50, y: 480},
+                calibrationPoint: new CalibrationZone(800, 100),
+                structures: [
+                    new StaticBoundary(0, 550, 900, 50),
+                    new StaticBoundary(200, 450, 150, 20),
+                    new StaticBoundary(450, 350, 150, 20),
+                    new StaticBoundary(750, 150, 150, 20),
+                    new StaticBoundary(650, 250, 80, 20) 
                 ],
-                hazards: [
-                    new Hazard('patrol', {x: 350, y: 520, vx: 100, minX: 350, maxX: 800, emoji: '🤖'}), // Roomba
-                    new Hazard('triggerFall', {
-                        x: 230, y: 50, emoji: '🍳', triggerZone: {x: 180, y: 400, w: 100, h: 50}
-                    }),
-                    new Hazard('triggerFall', {
-                        x: 450, y: -50, emoji: '🔪', triggerZone: {x: 400, y: 300, w: 100, h: 50}
-                    })
+                anomalies: [
+                    new DynamicObstacle({behavior: 'oscillate', x: 400, y: 520, velX: 120, minBoundX: 200, maxBoundX: 900}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 250, y: 50, sensorArea: {x: 200, y: 350, w: 150, h: 100}})
                 ]
             },
             {
-                name: "The Living Room",
-                desc: "Find the remote to watch TV. Avoid the malfunctioning automated dartboard.",
-                bgColor: "#dcedc8",
-                playerStart: {x: 50, y: 500},
-                goal: new Goal(730, 480, '📺', "Turn on TV"),
-                platforms: [
-                    new Platform(0, 550, 800, 50, '#5d4037'), // Floor
-                    new Platform(200, 400, 250, 40, '#ffcc80'), // Couch
-                    new Platform(200, 330, 50, 70, '#ffa726'), // Couch arm
-                    new Platform(400, 330, 50, 70, '#ffa726'), // Couch arm
-                    new Platform(100, 200, 150, 20, '#795548'), // Bookshelf
-                    new Platform(500, 250, 100, 20, '#795548'), // Bookshelf 2
-                    new Platform(650, 520, 150, 30, '#424242'), // TV Stand
+                designation: "Vertical Ascent with Emitters",
+                originData: {x: 50, y: 500},
+                calibrationPoint: new CalibrationZone(800, 480),
+                structures: [
+                    new StaticBoundary(0, 550, 150, 50), 
+                    new StaticBoundary(200, 400, 100, 20), 
+                    new StaticBoundary(350, 250, 100, 20), 
+                    new StaticBoundary(500, 150, 150, 20), 
+                    new StaticBoundary(750, 520, 150, 50), 
                 ],
-                hazards: [
-                    new Hazard('spawner', {x: -20, y: 380, spawnInterval: 1500, pEmoji: '🎯', pVx: 250, pVy: 0}),
-                    new Hazard('spawner', {x: 820, y: 220, spawnInterval: 2000, pEmoji: '📚', pVx: -200, pVy: 0}),
-                    new Hazard('triggerFall', {
-                        x: 300, y: 50, emoji: '💡', triggerZone: {x: 250, y: 350, w: 150, h: 50}
-                    })
+                anomalies: [
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 880, y: 220, emissionRate: 1500, particleVelX: -220, particleVelY: 0}),
+                    new DynamicObstacle({behavior: 'particleEmitter', x: -20, y: 350, emissionRate: 1800, particleVelX: 200, particleVelY: 0}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 550, y: -20, sensorArea: {x: 500, y: 150, w: 150, h: 400}})
                 ]
             },
             {
-                name: "The Bathroom",
-                desc: "Nature calls. But why are there flying plungers?",
-                bgColor: "#e3f2fd",
-                playerStart: {x: 30, y: 100},
-                goal: new Goal(700, 500, '🚽', "Use Toilet"),
-                platforms: [
-                    new Platform(0, 150, 150, 20, '#eceff1'), // Start high
-                    new Platform(200, 250, 100, 20, '#eceff1'),
-                    new Platform(350, 350, 100, 20, '#eceff1'),
-                    new Platform(500, 450, 100, 20, '#eceff1'),
-                    new Platform(650, 550, 150, 50, '#90a4ae'), // Floor area
-                    new Platform(0, 550, 200, 50, '#90a4ae'), // Pit trap base
+                designation: "Proximity Trigger Assessment",
+                originData: {x: 30, y: 100},
+                calibrationPoint: new CalibrationZone(800, 480),
+                structures: [
+                    new StaticBoundary(0, 150, 150, 20),
+                    new StaticBoundary(200, 250, 100, 20),
+                    new StaticBoundary(350, 350, 100, 20),
+                    new StaticBoundary(500, 450, 100, 20),
+                    new StaticBoundary(750, 530, 150, 50),
+                    new StaticBoundary(0, 550, 300, 50), 
                 ],
-                hazards: [
-                    new Hazard('patrol', {x: 10, y: 520, vx: 80, minX: 0, maxX: 200, emoji: '🦀'}),
-                    new Hazard('spawner', {x: -30, y: 220, spawnInterval: 1200, pEmoji: '🪠', pVx: 200, pVy: 100}), // Arcing plunger
-                    new Hazard('spawner', {x: 830, y: 300, spawnInterval: 1800, pEmoji: '🫧', pVx: -150, pVy: -50}),
-                    new Hazard('triggerFall', {
-                        x: 400, y: -20, emoji: '🧴', triggerZone: {x: 300, y: 250, w: 200, h: 100}, gravity: 1200
-                    })
+                anomalies: [
+                    new DynamicObstacle({behavior: 'oscillate', x: 50, y: 520, velX: 100, minBoundX: 0, maxBoundX: 300}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 220, y: 0, sensorArea: {x: 180, y: 200, w: 140, h: 100}}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 370, y: -50, sensorArea: {x: 330, y: 300, w: 140, h: 100}}),
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 400, emissionRate: 1200, particleVelX: -250, particleVelY: -80})
                 ]
             },
             {
-                name: "The Bedroom",
-                desc: "Turn off that annoying alarm! The ceiling fan is acting up.",
-                bgColor: "#ede7f6",
-                playerStart: {x: 50, y: 480},
-                goal: new Goal(50, 100, '⏰', "Stop Alarm"),
-                platforms: [
-                    new Platform(0, 550, 800, 50, '#5c2a18'), // Floor
-                    new Platform(200, 450, 300, 100, '#b39ddb'), // Bed
-                    new Platform(600, 300, 150, 250, '#795548'), // Wardrobe
-                    new Platform(350, 200, 100, 20, '#8d6e63'), // Floating shelf
-                    new Platform(150, 250, 80, 20, '#8d6e63'),
-                    new Platform(0, 150, 100, 20, '#8d6e63'), // Nightstand (Goal)
+                designation: "Compound Oscillation Matrix",
+                originData: {x: 50, y: 480},
+                calibrationPoint: new CalibrationZone(50, 100),
+                structures: [
+                    new StaticBoundary(0, 550, 900, 50),
+                    new StaticBoundary(200, 450, 200, 20),
+                    new StaticBoundary(500, 350, 150, 20),
+                    new StaticBoundary(750, 250, 100, 20),
+                    new StaticBoundary(450, 150, 150, 20),
+                    new StaticBoundary(200, 200, 100, 20),
+                    new StaticBoundary(0, 150, 100, 20), 
                 ],
-                hazards: [
-                    new Hazard('spawner', {x: 400, y: 0, spawnInterval: 800, pEmoji: '🧦', pVx: 0, pVy: 250}), // Dropping socks
-                    new Hazard('patrol', {x: 200, y: 420, vx: 150, minX: 200, maxX: 470, emoji: '🐈'}), // Cat on bed
-                    new Hazard('triggerFall', {
-                        x: 650, y: 0, emoji: '👕', triggerZone: {x: 550, y: 250, w: 100, h: 50}
-                    }),
-                    new Hazard('spawner', {x: 820, y: 150, spawnInterval: 2500, pEmoji: '🦇', pVx: -250, pVy: 0}) // Bat?
+                anomalies: [
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 450, y: -10, emissionRate: 1000, particleVelX: 0, particleVelY: 200}),
+                    new DynamicObstacle({behavior: 'oscillate', x: 200, y: 420, velX: 180, minBoundX: 200, maxBoundX: 400}), 
+                    new DynamicObstacle({behavior: 'oscillate', x: 500, y: 320, velX: 150, minBoundX: 500, maxBoundX: 650}),
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 120, emissionRate: 2000, particleVelX: -300, particleVelY: 0}) 
                 ]
             },
             {
-                name: "The Yard",
-                desc: "Just get the mail. It's absolute chaos outside.",
-                bgColor: "#e8f5e9",
-                playerStart: {x: 50, y: 480},
-                goal: new Goal(720, 480, '📬', "Get Mail"),
-                platforms: [
-                    new Platform(0, 550, 800, 50, '#388e3c'), // Grass
-                    new Platform(200, 400, 80, 20, '#795548'), // Branches
-                    new Platform(350, 300, 80, 20, '#795548'),
-                    new Platform(500, 200, 80, 20, '#795548'),
-                    new Platform(150, 150, 60, 20, '#795548'),
+                designation: "Terminal Velocity Validation",
+                originData: {x: 20, y: 480},
+                calibrationPoint: new CalibrationZone(820, 100),
+                structures: [
+                    new StaticBoundary(0, 550, 100, 50), 
+                    new StaticBoundary(150, 450, 80, 20),
+                    new StaticBoundary(300, 380, 80, 20),
+                    new StaticBoundary(450, 300, 80, 20),
+                    new StaticBoundary(600, 220, 80, 20),
+                    new StaticBoundary(750, 150, 150, 20)
                 ],
-                hazards: [
-                    new Hazard('patrol', {x: 200, y: 520, vx: 200, minX: 100, maxX: 700, emoji: '🚜'}), // Lawnmower fast
-                    new Hazard('spawner', {x: -50, y: 100, spawnInterval: 1000, pEmoji: '🐦', pVx: 300, pVy: 50}),
-                    new Hazard('triggerFall', {
-                        x: 220, y: 200, emoji: '🍎', triggerZone: {x: 180, y: 350, w: 80, h: 50}
-                    }),
-                    new Hazard('triggerFall', {
-                        x: 370, y: 100, emoji: '🍎', triggerZone: {x: 330, y: 250, w: 80, h: 50}
-                    }),
-                    new Hazard('triggerFall', {
-                        x: 650, y: 0, emoji: '🦅', triggerZone: {x: 550, y: 450, w: 200, h: 100}, gravity: 1500
-                    })
+                anomalies: [
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 0, y: 350, emissionRate: 1500, particleVelX: 250, particleVelY: 0}),
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 250, emissionRate: 1500, particleVelX: -250, particleVelY: 0}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 320, y: 0, sensorArea: {x: 280, y: 300, w: 120, h: 200}, gravityForce: 1500}),
+                    new DynamicObstacle({behavior: 'proximityDrop', x: 620, y: -50, sensorArea: {x: 580, y: 150, w: 120, h: 200}, gravityForce: 1500}),
+                    new DynamicObstacle({behavior: 'particleEmitter', x: 450, y: 0, emissionRate: 800, particleVelX: 0, particleVelY: 300})
                 ]
             }
         ];
 
-        let player = new Player(0, 0);
-        let currentLevel = null;
+        let primaryAgent = new AutonomousAgent(0, 0);
+        let activeEnvironment = null;
 
-        function loadLevel(index) {
-            if (index >= levels.length) {
-                winGame();
+        function loadEnvironment(index) {
+            if (index >= environmentData.length) {
+                concludeAnalysis();
                 return;
             }
-            const data = levels[index];
-            currentLevel = {
-                name: data.name,
-                bgColor: data.bgColor,
-                goal: data.goal,
-                platforms: data.platforms,
-                hazards: data.hazards.map(h => new Hazard(h.type, h)) // Deep copy hazards to reset states
+            const data = environmentData[index];
+            
+            // Deep copy anomalies to reset state for new attempts
+            activeEnvironment = {
+                calibrationPoint: data.calibrationPoint,
+                structures: data.structures,
+                anomalies: data.anomalies.map(a => new DynamicObstacle({...a})) 
             };
-            player.startX = data.playerStart.x;
-            player.startY = data.playerStart.y;
-            player.reset();
             
-            hudElements.task.textContent = `Task: ${data.goal.taskName}`;
-            hudElements.task.style.color = '#ffeb3b';
+            primaryAgent.originX = data.originData.x;
+            primaryAgent.originY = data.originData.y;
+            primaryAgent.restoreOrigin();
+            
+            telemetry.env.textContent = `0${index + 1}/05`;
         }
 
-        function startGame() {
-            gameState = 'PLAYING';
-            currentLevelIndex = 0;
-            lives = 5;
-            updateLivesHUD();
-            startTime = Date.now();
-            elapsedTime = 0;
+        function executeSimulation() {
+            systemState = 'ACTIVE';
+            currentEnvIndex = 0;
+            availableIterations = 5;
+            updateTelemetryDisplay();
             
-            screens.start.classList.add('hidden');
-            screens.gameOver.classList.add('hidden');
-            screens.victory.classList.add('hidden');
+            uptimeStart = Date.now();
+            elapsedMilliseconds = 0;
             
-            loadLevel(currentLevelIndex);
+            panels.init.classList.add('hidden-state');
+            panels.term.classList.add('hidden-state');
+            panels.conc.classList.add('hidden-state');
             
-            timerInterval = setInterval(() => {
-                if (gameState === 'PLAYING') {
-                    elapsedTime = Date.now() - startTime;
-                    let seconds = Math.floor((elapsedTime / 1000) % 60);
-                    let minutes = Math.floor((elapsedTime / 1000) / 60);
-                    hudElements.time.textContent = 
-                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            loadEnvironment(currentEnvIndex);
+            
+            clockInterval = setInterval(() => {
+                if (systemState === 'ACTIVE') {
+                    elapsedMilliseconds = Date.now() - uptimeStart;
+                    telemetry.uptime.textContent = (elapsedMilliseconds / 1000).toFixed(2) + 's';
                 }
-            }, 1000);
+            }, 50);
 
-            lastFrameTime = performance.now();
-            requestAnimationFrame(gameLoop);
+            previousTimestamp = performance.now();
+            requestAnimationFrame(processFrame);
         }
 
-        function resetGame() {
-            clearInterval(timerInterval);
-            startGame();
+        function resetSystem() {
+            clearInterval(clockInterval);
+            executeSimulation();
         }
 
-        function updateLivesHUD() {
-            hudElements.lives.textContent = 'Lives: ' + '❤️'.repeat(lives);
+        function updateTelemetryDisplay() {
+            telemetry.iter.textContent = availableIterations;
+            if (availableIterations <= 2) telemetry.iter.style.color = '#ff7b72';
+            else telemetry.iter.style.color = '#3fb950';
         }
 
-        function die() {
-            if (gameState !== 'PLAYING') return;
-            lives--;
-            updateLivesHUD();
+        function triggerSystemReset() {
+            if (systemState !== 'ACTIVE') return;
+            availableIterations--;
+            updateTelemetryDisplay();
             
-            if (lives <= 0) {
-                gameState = 'GAMEOVER';
-                screens.gameOver.classList.remove('hidden');
-                clearInterval(timerInterval);
+            if (availableIterations <= 0) {
+                systemState = 'TERMINATED';
+                panels.term.classList.remove('hidden-state');
+                clearInterval(clockInterval);
             } else {
-                // Screen shake effect logic could go here
-                ctx.fillStyle = 'rgba(255,0,0,0.5)';
+                // Visual feedback for anomaly intersection
+                ctx.fillStyle = 'rgba(255, 123, 114, 0.4)';
                 ctx.fillRect(0,0,canvas.width, canvas.height);
                 
-                // Reset level state slightly delayed or immediately
                 setTimeout(() => {
-                    if(gameState === 'PLAYING') loadLevel(currentLevelIndex);
+                    if(systemState === 'ACTIVE') loadEnvironment(currentEnvIndex);
                 }, 100);
             }
         }
 
-        function completeLevel() {
-            gameState = 'TRANSITION';
-            hudElements.task.textContent = 'COMPLETED!';
-            hudElements.task.style.color = '#4caf50';
-            
-            document.getElementById('level-title').textContent = `${levels[currentLevelIndex].name} Conquered!`;
-            document.getElementById('level-desc').textContent = levels[currentLevelIndex].desc;
-            screens.level.classList.remove('hidden');
+        function advanceEnvironment() {
+            systemState = 'PROCESSING';
+            document.getElementById('transition-log').textContent = `Calibration complete for Environment 0${currentEnvIndex + 1}. Transitioning...`;
+            panels.trans.classList.remove('hidden-state');
 
             setTimeout(() => {
-                currentLevelIndex++;
-                if (currentLevelIndex < levels.length) {
-                    screens.level.classList.add('hidden');
-                    loadLevel(currentLevelIndex);
-                    gameState = 'PLAYING';
-                    lastFrameTime = performance.now();
-                    requestAnimationFrame(gameLoop);
+                currentEnvIndex++;
+                if (currentEnvIndex < environmentData.length) {
+                    panels.trans.classList.add('hidden-state');
+                    loadEnvironment(currentEnvIndex);
+                    systemState = 'ACTIVE';
+                    previousTimestamp = performance.now();
+                    requestAnimationFrame(processFrame);
                 } else {
-                    screens.level.classList.add('hidden');
-                    winGame();
+                    panels.trans.classList.add('hidden-state');
+                    concludeAnalysis();
                 }
-            }, 2500);
+            }, 2000);
         }
 
-        function winGame() {
-            gameState = 'VICTORY';
-            clearInterval(timerInterval);
-            let seconds = Math.floor((elapsedTime / 1000) % 60);
-            let minutes = Math.floor((elapsedTime / 1000) / 60);
-            document.getElementById('final-time').textContent = 
-                `Total Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            screens.victory.classList.remove('hidden');
+        function concludeAnalysis() {
+            systemState = 'CONCLUDED';
+            clearInterval(clockInterval);
+            document.getElementById('final-uptime-metric').textContent = (elapsedMilliseconds / 1000).toFixed(2) + ' seconds';
+            panels.conc.classList.remove('hidden-state');
         }
 
-        function gameLoop(timestamp) {
-            if (gameState !== 'PLAYING') return;
+        function processFrame(currentTimestamp) {
+            if (systemState !== 'ACTIVE') return;
 
-            const dt = (timestamp - lastFrameTime) / 1000;
-            lastFrameTime = timestamp;
+            const deltaTime = (currentTimestamp - previousTimestamp) / 1000;
+            previousTimestamp = currentTimestamp;
 
-            // Cap dt to prevent physics explosions on lag
-            if (dt > 0.1) {
-                requestAnimationFrame(gameLoop);
+            // Frame cap to maintain physics stability
+            if (deltaTime > 0.1) {
+                requestAnimationFrame(processFrame);
                 return;
             }
 
-            // Update
-            player.update(dt, currentLevel.platforms);
+            // Kinematic Updates
+            primaryAgent.calculateKinematics(deltaTime, activeEnvironment.structures);
             
-            for (let hazard of currentLevel.hazards) {
-                hazard.update(dt, player);
+            for (let anomaly of activeEnvironment.anomalies) {
+                anomaly.processBehaviors(deltaTime, primaryAgent);
             }
 
-            // Check Goal Collision
-            let p = player.getHitbox();
-            let g = currentLevel.goal;
-            if (p.x < g.x + g.w && p.x + p.w > g.x &&
-                p.y < g.y + g.h && p.y + p.h > g.y) {
-                completeLevel();
-                return; // Stop current loop execution
+            // Calibration Zone Intersection Check
+            let aRect = primaryAgent.getSpatialCoordinates();
+            let cZone = activeEnvironment.calibrationPoint;
+            if (aRect.x < cZone.x + cZone.w && aRect.x + aRect.w > cZone.x &&
+                aRect.y < cZone.y + cZone.h && aRect.y + aRect.h > cZone.y) {
+                advanceEnvironment();
+                return; 
             }
 
-            // Draw
-            ctx.fillStyle = currentLevel.bgColor;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Viewport Rendering Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw background decorative elements (optional grid/patterns)
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            for(let i=0; i<canvas.width; i+=40) ctx.fillRect(i, 0, 1, canvas.height);
-            for(let i=0; i<canvas.height; i+=40) ctx.fillRect(0, i, canvas.width, 1);
+            // Render entities
+            for (let structure of activeEnvironment.structures) structure.render(ctx);
+            activeEnvironment.calibrationPoint.render(ctx);
+            for (let anomaly of activeEnvironment.anomalies) anomaly.render(ctx);
+            primaryAgent.render(ctx);
 
-            for (let platform of currentLevel.platforms) {
-                platform.draw(ctx);
-            }
-
-            currentLevel.goal.draw(ctx);
-
-            for (let hazard of currentLevel.hazards) {
-                hazard.draw(ctx);
-            }
-
-            player.draw(ctx);
-
-            requestAnimationFrame(gameLoop);
+            requestAnimationFrame(processFrame);
         }
-
-        // Initial drawing for start screen background
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     </script>
 </body>
 </html>
