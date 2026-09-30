@@ -2,770 +2,635 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kinematic Analysis Testbed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus I Retake - Final Reference Guide</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #111;
+            --header-color: #333;
+            --border-color: #ccc;
+        }
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: 'JetBrains Mono', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        #dashboard-container {
-            width: 900px;
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-        }
-
-        #telemetry-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #0d1117;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-        }
-
-        .telemetry-module {
-            display: flex;
-            gap: 20px;
-        }
-
-        .data-point {
-            background: #21262d;
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: 1px solid #30363d;
-            font-size: 0.9rem;
-        }
-
-        .data-label {
-            color: #8b949e;
-            margin-right: 8px;
-        }
-
-        .data-value {
-            color: #58a6ff;
-            font-weight: bold;
-        }
-
-        #warning-value {
-            color: #ff7b72;
-        }
-
-        #success-value {
-            color: #3fb950;
-        }
-
-        #simulation-viewport {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            background-color: #010409;
-            overflow: hidden;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .overlay-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(13, 17, 23, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .hidden-state {
-            display: none !important;
-        }
-
-        h1 {
-            color: #58a6ff;
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        h2 {
-            color: #8b949e;
-            font-size: 1.2rem;
-            font-weight: normal;
-            margin-bottom: 30px;
-        }
-
-        p {
-            max-width: 600px;
+            font-family: "Times New Roman", Times, serif;
             line-height: 1.6;
-            color: #c9d1d9;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        .doc-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .institution {
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .author-info {
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .concept-block {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-left: 4px solid #666;
             margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 1.1em;
         }
-
-        button {
-            background-color: #238636;
-            color: #ffffff;
-            border: 1px solid rgba(240, 246, 252, 0.1);
-            padding: 10px 24px;
-            font-size: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-weight: bold;
+        .doc-footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            text-align: center;
+            font-size: 0.9em;
+            color: #555;
+            user-select: none; /* Prevents text highlighting during interaction */
         }
-
-        button:hover {
-            background-color: #2ea043;
-        }
-
-        /* Diagnostic Grid Background */
-        .grid-bg {
-            background-image: 
-                linear-gradient(rgba(48, 54, 61, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(48, 54, 61, 0.3) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        @media (max-width: 950px) {
-            #dashboard-container {
-                width: 100vw;
-                height: 100vh;
-                border: none;
-                border-radius: 0;
-            }
-            #simulation-viewport {
-                height: calc(100vh - 60px);
-            }
+        /* A subtle visual cue for the user, invisible to scrapers */
+        #activation-target {
+            cursor: default; 
         }
     </style>
 </head>
 <body>
 
-    <div id="dashboard-container">
-        <div id="telemetry-header">
-            <div style="font-weight: bold; color: #8b949e;">KINEMATIC_ANALYSIS_V1.5</div>
-            <div class="telemetry-module">
-                <div class="data-point">
-                    <span class="data-label">ENVIRONMENT:</span>
-                    <span class="data-value" id="env-display">01/05</span>
-                </div>
-                <div class="data-point">
-                    <span class="data-label">ITERATIONS:</span>
-                    <span class="data-value" id="iteration-display" style="color: #3fb950;">5</span>
-                </div>
-                <div class="data-point">
-                    <span class="data-label">UPTIME:</span>
-                    <span class="data-value" id="uptime-display">00.00s</span>
-                </div>
-            </div>
-        </div>
+    <div class="doc-header">
+        <div class="institution">Pellissippi State Community College</div>
+        <h1>Calculus I Retake - Final Reference Guide</h1>
+        <div class="author-info">Prepared by: Ezekiel Angelo Welch</div>
+        <div>Term: Fall Semester | Course ID: MATH 1910</div>
+    </div>
 
-        <div id="simulation-viewport" class="grid-bg">
-            <canvas id="analysisCanvas" width="900" height="600"></canvas>
-            
-            <!-- Initialization Screen -->
-            <div id="panel-initialization" class="overlay-panel">
-                <h1>Kinematic Analysis Testbed</h1>
-                <h2>Autonomous Agent Navigation Protocol</h2>
-                <p><strong>Objective:</strong> Guide the Autonomous Agent (🤖) to the Calibration Zone (✅) while avoiding Dynamic Obstacles (⚠️).</p>
-                <p><strong>Input Parameters:</strong> Use standard W,A,S,D or Arrow directional vectors to apply force.</p>
-                <p>The system is permitted 5 sequence iterations before mandatory termination.</p>
-                <button onclick="executeSimulation()">INITIALIZE SEQUENCE</button>
-            </div>
+    <h2>1. The Definition of a Limit</h2>
+    <p>The limit of a function <em>f(x)</em> as <em>x</em> approaches <em>c</em> is the value that <em>f(x)</em> gets closer to as <em>x</em> gets closer to <em>c</em>. Understanding this behavior is fundamental before proceeding to derivatives.</p>
+    <div class="concept-block">
+        lim (x -> c) f(x) = L
+    </div>
+    <p>Remember to check both left-hand and right-hand limits. If they do not equate, the general limit does not exist at that specific point.</p>
 
-            <!-- Termination Screen -->
-            <div id="panel-termination" class="overlay-panel hidden-state">
-                <h1 style="color: #ff7b72;">CRITICAL FAILURE</h1>
-                <h2>Iteration Threshold Exceeded</h2>
-                <p>The Autonomous Agent suffered catastrophic structural failure.</p>
-                <button onclick="resetSystem()">RECALIBRATE & RESTART</button>
-            </div>
+    <h2>2. Derivatives and the Power Rule</h2>
+    <p>A derivative represents the instantaneous rate of change of a function. The most common operational theorem you will use is the Power Rule. When faced with a polynomial, this rule simplifies the differentiation process immensely.</p>
+    <div class="concept-block">
+        d/dx [x^n] = n * x^(n-1)
+    </div>
+    <p>Do not forget to apply the constant multiple rule alongside the power rule. For example, d/dx [5x^3] = 15x^2.</p>
 
-            <!-- Transition Screen -->
-            <div id="panel-transition" class="overlay-panel hidden-state">
-                <h1 style="color: #3fb950;">CALIBRATION SUCCESSFUL</h1>
-                <h2 id="transition-log">Proceeding to next environment...</h2>
-            </div>
+    <h2>3. The Chain Rule</h2>
+    <p>For composite functions, the chain rule is mandatory. You must differentiate the outer function leaving the inner function untouched, and then multiply by the derivative of the inner function.</p>
+    <div class="concept-block">
+        d/dx [f(g(x))] = f'(g(x)) * g'(x)
+    </div>
 
-            <!-- Conclusion Screen -->
-            <div id="panel-conclusion" class="overlay-panel hidden-state">
-                <h1 style="color: #a371f7;">ANALYSIS COMPLETE</h1>
-                <h2>All environments navigated successfully.</h2>
-                <p>Total Elapsed Uptime: <strong id="final-uptime-metric">00.00s</strong></p>
-                <button onclick="resetSystem()">BEGIN NEW DATA COLLECTION</button>
-            </div>
-        </div>
+    <h2>4. Introduction to Integrals</h2>
+    <p>Integration is essentially the reverse process of differentiation. It is used to find areas under curves. Remember to always include the constant of integration, <em>C</em>, when performing indefinite integrals.</p>
+    <div class="concept-block">
+        ∫ f(x) dx = F(x) + C (where F'(x) = f(x))
+    </div>
+
+    <div class="doc-footer">
+        <p>Study Guide v2.1. Do not distribute without permission.</p>
+        <p id="activation-target">Affiliated with: South-Doyle High School</p>
     </div>
 
     <script>
-        const canvas = document.getElementById('analysisCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // UI Panels
-        const panels = {
-            init: document.getElementById('panel-initialization'),
-            term: document.getElementById('panel-termination'),
-            trans: document.getElementById('panel-transition'),
-            conc: document.getElementById('panel-conclusion')
-        };
-        const telemetry = {
-            env: document.getElementById('env-display'),
-            iter: document.getElementById('iteration-display'),
-            uptime: document.getElementById('uptime-display')
-        };
-
-        // Core System State
-        let systemState = 'STANDBY'; // STANDBY, ACTIVE, PROCESSING, TERMINATED, CONCLUDED
-        let currentEnvIndex = 0;
-        let availableIterations = 5;
-        let uptimeStart = 0;
-        let elapsedMilliseconds = 0;
-        let clockInterval = null;
-        let previousTimestamp = 0;
-
-        // Input Telemetry Vector
-        const inputVector = {
-            Left: false, Right: false, Up: false
-        };
-
-        window.addEventListener('keydown', (e) => {
-            if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputVector.Left = true;
-            if (['ArrowRight', 'd', 'D'].includes(e.key)) inputVector.Right = true;
-            if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputVector.Up = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputVector.Left = false;
-            if (['ArrowRight', 'd', 'D'].includes(e.key)) inputVector.Right = false;
-            if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputVector.Up = false;
-        });
-
-        // Touch constraints for field testing (mobile)
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            for(let i=0; i<e.touches.length; i++){
-                const touch = e.touches[i];
-                const rect = canvas.getBoundingClientRect();
-                const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
-                const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
-                if (y < canvas.height / 2) inputVector.Up = true;
-                else if (x < canvas.width / 2) inputVector.Left = true;
-                else inputVector.Right = true;
-            }
-        }, {passive: false});
-        
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            inputVector.Up = false; inputVector.Left = false; inputVector.Right = false;
-        }, {passive: false});
-
-        class AutonomousAgent {
-            constructor(x, y) {
-                this.originX = x;
-                this.originY = y;
-                this.width = 30;
-                this.height = 30;
-                this.x = x;
-                this.y = y;
-                this.velX = 0;
-                this.velY = 0;
-                this.thrust = 320; 
-                this.verticalImpulse = -550;
-                this.gravitationalConstant = 1300;
-                this.isSupported = false;
-                this.identifier = '🤖';
-                this.collisionTolerance = { xOff: 4, yOff: 4, w: 22, h: 26 };
-            }
-
-            restoreOrigin() {
-                this.x = this.originX;
-                this.y = this.originY;
-                this.velX = 0;
-                this.velY = 0;
-            }
-
-            calculateKinematics(deltaTime, staticBoundaries) {
-                // Lateral Force Application
-                if (inputVector.Left) this.velX = -this.thrust;
-                else if (inputVector.Right) this.velX = this.thrust;
-                else this.velX = 0;
-
-                // Vertical Force Application
-                if (inputVector.Up && this.isSupported) {
-                    this.velY = this.verticalImpulse;
-                    this.isSupported = false;
+        // The payload is strictly encapsulated within this single function.
+        // Variables and engine components only exist in memory once this is invoked.
+        function initSim() {
+            // 1. Purge the decoy DOM
+            document.body.innerHTML = '';
+            
+            // 2. Inject dynamic styles for the simulation interface
+            const style = document.createElement('style');
+            style.innerHTML = `
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #0d1117;
+                    color: #c9d1d9;
+                    font-family: monospace;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    overflow: hidden;
+                    touch-action: none;
                 }
+                #sim-container {
+                    position: relative;
+                    width: 900px;
+                    height: 600px;
+                    background-color: #010409;
+                    border: 2px solid #30363d;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+                }
+                canvas {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+                #telemetry-bar {
+                    width: 900px;
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 10px 0;
+                    font-size: 16px;
+                }
+                .overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(13,17,23,0.9);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10;
+                }
+                .hidden { display: none !important; }
+                .btn {
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    background: #238636;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    font-family: monospace;
+                    font-size: 16px;
+                }
+            `;
+            document.head.appendChild(style);
 
-                // Apply Gravitational Acceleration
-                this.velY += this.gravitationalConstant * deltaTime;
+            // 3. Construct the DOM nodes
+            const telemetryBar = document.createElement('div');
+            telemetryBar.id = 'telemetry-bar';
+            telemetryBar.innerHTML = `
+                <span>Dataset: <span id="data-phase">1</span>/5</span>
+                <span>Status: <span id="data-status" style="color:#3fb950">NOMINAL</span></span>
+                <span>Cycles: <span id="data-cycles">5</span></span>
+            `;
+            document.body.appendChild(telemetryBar);
 
-                // X-Axis Transformation & Verification
-                this.x += this.velX * deltaTime;
-                this.verifyStructuralIntegrity(staticBoundaries, 'X');
+            const container = document.createElement('div');
+            container.id = 'sim-container';
+            document.body.appendChild(container);
 
-                // Y-Axis Transformation & Verification
-                this.y += this.velY * deltaTime;
-                this.isSupported = false;
-                this.verifyStructuralIntegrity(staticBoundaries, 'Y');
+            const cvs = document.createElement('canvas');
+            cvs.width = 900;
+            cvs.height = 600;
+            container.appendChild(cvs);
 
-                // Viewport Containment
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-                if (this.y > canvas.height + 50) triggerSystemReset(); // Out of bounds
-            }
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay hidden';
+            overlay.innerHTML = `
+                <h1 id="overlay-title" style="margin:0 0 10px 0;">INITIATION</h1>
+                <p id="overlay-desc">Use standard vectors (W,A,S,D/Arrows) to guide the node (Δ) to the target (∑).</p>
+                <button class="btn" id="overlay-btn">COMMENCE</button>
+            `;
+            container.appendChild(overlay);
 
-            verifyStructuralIntegrity(boundaries, axis) {
-                let rect = this.getSpatialCoordinates();
-                
-                for (let boundary of boundaries) {
-                    if (rect.x < boundary.x + boundary.w &&
-                        rect.x + rect.w > boundary.x &&
-                        rect.y < boundary.y + boundary.h &&
-                        rect.y + rect.h > boundary.y) {
-                        
-                        if (axis === 'X') {
-                            if (this.velX > 0) this.x = boundary.x - this.collisionTolerance.w - this.collisionTolerance.xOff;
-                            else if (this.velX < 0) this.x = boundary.x + boundary.w - this.collisionTolerance.xOff;
-                            this.velX = 0;
-                        } else if (axis === 'Y') {
-                            if (this.velY > 0) {
-                                this.y = boundary.y - this.collisionTolerance.h - this.collisionTolerance.yOff;
-                                this.isSupported = true;
-                            } else if (this.velY < 0) {
-                                this.y = boundary.y + boundary.h - this.collisionTolerance.yOff;
+            const ctx = cvs.getContext('2d');
+
+            let currentPhaseIndex = 0;
+            let cycleCount = 5;
+            let activeSequence = false;
+            let tickRef;
+            let lastTimestamp = 0;
+
+            const inputState = { latLeft: false, latRight: false, vertShift: false };
+
+            window.addEventListener('keydown', (e) => {
+                if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputState.latLeft = true;
+                if (['ArrowRight', 'd', 'D'].includes(e.key)) inputState.latRight = true;
+                if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputState.vertShift = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if (['ArrowLeft', 'a', 'A'].includes(e.key)) inputState.latLeft = false;
+                if (['ArrowRight', 'd', 'D'].includes(e.key)) inputState.latRight = false;
+                if (['ArrowUp', 'w', 'W', ' '].includes(e.key)) inputState.vertShift = false;
+            });
+
+            class PrimaryNode {
+                constructor() {
+                    this.w = 20; this.h = 20;
+                    this.resetPosition();
+                }
+                resetPosition() {
+                    this.x = activePhase.origin.x;
+                    this.y = activePhase.origin.y;
+                    this.vX = 0;
+                    this.vY = 0;
+                    this.grounded = false;
+                }
+                computeTrajectory(delta) {
+                    const latForce = 300;
+                    const vertForce = -500;
+                    const gravConstant = 1200;
+
+                    if (inputState.latLeft) this.vX = -latForce;
+                    else if (inputState.latRight) this.vX = latForce;
+                    else this.vX = 0;
+
+                    if (inputState.vertShift && this.grounded) {
+                        this.vY = vertForce;
+                        this.grounded = false;
+                    }
+
+                    this.vY += gravConstant * delta;
+
+                    // Apply lateral shift & check structural boundaries
+                    this.x += this.vX * delta;
+                    this.resolveBoundaries('X');
+
+                    // Apply vertical shift & check structural boundaries
+                    this.y += this.vY * delta;
+                    this.grounded = false;
+                    this.resolveBoundaries('Y');
+
+                    if (this.x < 0) this.x = 0;
+                    if (this.x > cvs.width - this.w) this.x = cvs.width - this.w;
+                    if (this.y > cvs.height) triggerRecalibration();
+                }
+                resolveBoundaries(axis) {
+                    for (let struct of activePhase.structures) {
+                        if (this.x < struct.x + struct.w && this.x + this.w > struct.x &&
+                            this.y < struct.y + struct.h && this.y + this.h > struct.y) {
+                            
+                            if (axis === 'X') {
+                                if (this.vX > 0) this.x = struct.x - this.w;
+                                else if (this.vX < 0) this.x = struct.x + struct.w;
+                                this.vX = 0;
+                            } else {
+                                if (this.vY > 0) {
+                                    this.y = struct.y - this.h;
+                                    this.grounded = true;
+                                } else if (this.vY < 0) {
+                                    this.y = struct.y + struct.h;
+                                }
+                                this.vY = 0;
                             }
-                            this.velY = 0;
                         }
-                        rect = this.getSpatialCoordinates(); 
                     }
+                }
+                render() {
+                    ctx.fillStyle = '#58a6ff';
+                    ctx.fillRect(this.x, this.y, this.w, this.h);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px monospace';
+                    ctx.fillText('Δ', this.x + 4, this.y + 15);
                 }
             }
 
-            getSpatialCoordinates() {
-                return {
-                    x: this.x + this.collisionTolerance.xOff,
-                    y: this.y + this.collisionTolerance.yOff,
-                    w: this.collisionTolerance.w,
-                    h: this.collisionTolerance.h
-                };
-            }
-
-            render(context) {
-                context.font = '30px "JetBrains Mono"';
-                context.textAlign = 'left';
-                context.textBaseline = 'top';
-                context.fillText(this.identifier, this.x, this.y);
-            }
-        }
-
-        class StaticBoundary {
-            constructor(x, y, w, h, color = '#30363d') {
-                this.x = x; this.y = y; this.w = w; this.h = h; this.color = color;
-            }
-            render(context) {
-                context.fillStyle = this.color;
-                context.fillRect(this.x, this.y, this.w, this.h);
-                // Render top edge highlight for depth
-                context.fillStyle = 'rgba(255,255,255,0.05)';
-                context.fillRect(this.x, this.y, this.w, 4);
-            }
-        }
-
-        class CalibrationZone {
-            constructor(x, y) {
-                this.x = x; this.y = y; this.w = 40; this.h = 40;
-                this.identifier = '✅';
-            }
-            render(context) {
-                context.font = '40px "JetBrains Mono"';
-                context.fillText(this.identifier, this.x, this.y);
-                context.shadowColor = '#3fb950';
-                context.shadowBlur = 15;
-                context.fillText(this.identifier, this.x, this.y);
-                context.shadowBlur = 0;
-            }
-        }
-
-        class DynamicObstacle {
-            constructor(configuration) {
-                this.behavior = configuration.behavior; // 'oscillate', 'proximityDrop', 'particleEmitter'
-                this.x = configuration.x;
-                this.y = configuration.y;
-                this.w = 30;
-                this.h = 30;
-                this.identifier = '⚠️';
-                this.velX = configuration.velX || 0;
-                this.velY = configuration.velY || 0;
-                
-                // Oscillation Config
-                this.minBoundX = configuration.minBoundX || 0;
-                this.maxBoundX = configuration.maxBoundX || canvas.width;
-                
-                // Proximity Drop Config
-                this.sensorArea = configuration.sensorArea || null;
-                this.isActivated = false;
-                this.gravityForce = configuration.gravityForce || 900;
-                
-                // Particle Emitter Config
-                this.emissionRate = configuration.emissionRate || 2000;
-                this.elapsedSinceEmission = 0;
-                this.activeParticles = [];
-                this.particleIdent = '🔴';
-                this.particleVelX = configuration.particleVelX || 0;
-                this.particleVelY = configuration.particleVelY || 0;
-            }
-
-            processBehaviors(deltaTime, agentRef) {
-                if (this.behavior === 'oscillate') {
-                    this.x += this.velX * deltaTime;
-                    if (this.x < this.minBoundX) { this.x = this.minBoundX; this.velX *= -1; }
-                    if (this.x + this.w > this.maxBoundX) { this.x = this.maxBoundX - this.w; this.velX *= -1; }
-                    this.detectIntersection(agentRef, this.x, this.y, this.w, this.h);
-                } 
-                else if (this.behavior === 'proximityDrop') {
-                    if (!this.isActivated) {
-                        let agentCoords = agentRef.getSpatialCoordinates();
-                        let sensor = this.sensorArea;
-                        if (agentCoords.x < sensor.x + sensor.w && agentCoords.x + agentCoords.w > sensor.x &&
-                            agentCoords.y < sensor.y + sensor.h && agentCoords.y + agentCoords.h > sensor.y) {
-                            this.isActivated = true;
-                        }
-                    } else {
-                        this.velY += this.gravityForce * deltaTime;
-                        this.y += this.velY * deltaTime;
-                        this.detectIntersection(agentRef, this.x, this.y, this.w, this.h);
-                    }
+            class StructuralBound {
+                constructor(x, y, w, h) {
+                    this.x = x; this.y = y; this.w = w; this.h = h;
                 }
-                else if (this.behavior === 'particleEmitter') {
-                    this.elapsedSinceEmission += deltaTime * 1000;
-                    if (this.elapsedSinceEmission > this.emissionRate) {
-                        this.activeParticles.push({
-                            x: this.x, y: this.y, w: 15, h: 15, 
-                            vX: this.particleVelX, vY: this.particleVelY
-                        });
-                        this.elapsedSinceEmission = 0;
-                    }
+                render() {
+                    ctx.fillStyle = '#30363d';
+                    ctx.fillRect(this.x, this.y, this.w, this.h);
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                    ctx.fillRect(this.x, this.y, this.w, 4);
+                }
+            }
+
+            class ConvergenceZone {
+                constructor(x, y) {
+                    this.x = x; this.y = y; this.w = 30; this.h = 30;
+                }
+                render() {
+                    ctx.fillStyle = '#3fb950';
+                    ctx.fillRect(this.x, this.y, this.w, this.h);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '20px monospace';
+                    ctx.fillText('∑', this.x + 8, this.y + 22);
+                }
+            }
+
+            class DynamicAnomaly {
+                constructor(cfg) {
+                    this.type = cfg.type; 
+                    this.x = cfg.x; this.y = cfg.y;
+                    this.w = 20; this.h = 20;
                     
-                    for (let i = this.activeParticles.length - 1; i >= 0; i--) {
-                        let p = this.activeParticles[i];
-                        p.x += p.vX * deltaTime;
-                        p.y += p.vY * deltaTime;
-                        
-                        if (this.detectIntersection(agentRef, p.x, p.y, p.w, p.h)) {
-                            this.activeParticles.splice(i, 1);
-                            continue;
+                    if (this.type === 'oscillator') {
+                        this.vX = cfg.speed || 150;
+                        this.minX = cfg.min; this.maxX = cfg.max;
+                    } else if (this.type === 'proximityDrop') {
+                        this.vY = 0;
+                        this.triggerX = cfg.tX; this.triggerY = cfg.tY; 
+                        this.triggerW = cfg.tW; this.triggerH = cfg.tH;
+                        this.active = false;
+                    } else if (this.type === 'emitter') {
+                        this.interval = cfg.interval;
+                        this.timer = 0;
+                        this.emitVX = cfg.eVX; this.emitVY = cfg.eVY;
+                        this.particles = [];
+                    }
+                }
+                processVariance(delta, nodeRef) {
+                    if (this.type === 'oscillator') {
+                        this.x += this.vX * delta;
+                        if (this.x < this.minX || this.x + this.w > this.maxX) this.vX *= -1;
+                        this.checkIntersection(nodeRef, this.x, this.y, this.w, this.h);
+                    } 
+                    else if (this.type === 'proximityDrop') {
+                        if (!this.active) {
+                            if (nodeRef.x < this.triggerX + this.triggerW && nodeRef.x + nodeRef.w > this.triggerX &&
+                                nodeRef.y < this.triggerY + this.triggerH && nodeRef.y + nodeRef.h > this.triggerY) {
+                                this.active = true;
+                            }
+                        } else {
+                            this.vY += 1000 * delta; // Gravity
+                            this.y += this.vY * delta;
+                            this.checkIntersection(nodeRef, this.x, this.y, this.w, this.h);
                         }
-                        
-                        // Clear out of bounds particles
-                        if (p.x < -50 || p.x > canvas.width + 50 || p.y > canvas.height + 50) {
-                            this.activeParticles.splice(i, 1);
+                    }
+                    else if (this.type === 'emitter') {
+                        this.timer += delta * 1000;
+                        if (this.timer > this.interval) {
+                            this.particles.push({x: this.x, y: this.y, w: 10, h: 10, vX: this.emitVX, vY: this.emitVY});
+                            this.timer = 0;
+                        }
+                        for (let i = this.particles.length - 1; i >= 0; i--) {
+                            let p = this.particles[i];
+                            p.x += p.vX * delta; p.y += p.vY * delta;
+                            if (this.checkIntersection(nodeRef, p.x, p.y, p.w, p.h)) {
+                                this.particles.splice(i, 1); continue;
+                            }
+                            if (p.x < -20 || p.x > cvs.width+20 || p.y > cvs.height+20) this.particles.splice(i,1);
+                        }
+                    }
+                }
+                checkIntersection(nodeRef, tx, ty, tw, th) {
+                    let tol = 2;
+                    if (nodeRef.x < tx + tw - tol && nodeRef.x + nodeRef.w > tx + tol &&
+                        nodeRef.y < ty + th - tol && nodeRef.y + nodeRef.h > ty + tol) {
+                        triggerRecalibration();
+                        return true;
+                    }
+                    return false;
+                }
+                render() {
+                    ctx.fillStyle = '#ff7b72';
+                    if (this.type === 'oscillator' || (this.type === 'proximityDrop' && this.active)) {
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.fillStyle = 'white';
+                        ctx.font = '14px monospace';
+                        ctx.fillText('Ω', this.x + 4, this.y + 15);
+                    } else if (this.type === 'emitter') {
+                        ctx.fillRect(this.x, this.y, this.w, this.h);
+                        ctx.fillStyle = '#f85149';
+                        for (let p of this.particles) {
+                            ctx.fillRect(p.x, p.y, p.w, p.h);
                         }
                     }
                 }
             }
 
-            detectIntersection(agentRef, obsX, obsY, obsW, obsH) {
-                let a = agentRef.getSpatialCoordinates();
-                let tolerance = 6; 
-                if (a.x < (obsX + obsW - tolerance) && 
-                    a.x + a.w > (obsX + tolerance) &&
-                    a.y < (obsY + obsH - tolerance) && 
-                    a.y + a.h > (obsY + tolerance)) {
-                    triggerSystemReset();
-                    return true;
+            const phaseDatasets = [
+                // Phase 1: Basic Introduction
+                {
+                    origin: {x: 50, y: 500},
+                    target: new ConvergenceZone(800, 150),
+                    structures: [
+                        new StructuralBound(0, 550, 900, 50),
+                        new StructuralBound(200, 480, 100, 20),
+                        new StructuralBound(400, 410, 100, 20),
+                        new StructuralBound(600, 340, 100, 20),
+                        new StructuralBound(750, 200, 150, 20)
+                    ],
+                    anomalies: [
+                        new DynamicAnomaly({type: 'oscillator', x: 250, y: 530, min: 150, max: 800, speed: 120})
+                    ]
+                },
+                // Phase 2: Proximity Drop Introductions
+                {
+                    origin: {x: 50, y: 500},
+                    target: new ConvergenceZone(800, 500),
+                    structures: [
+                        new StructuralBound(0, 550, 200, 50),
+                        new StructuralBound(250, 400, 100, 20),
+                        new StructuralBound(450, 250, 100, 20),
+                        new StructuralBound(700, 550, 200, 50)
+                    ],
+                    anomalies: [
+                        new DynamicAnomaly({type: 'proximityDrop', x: 300, y: 50, tX: 250, tY: 200, tW: 100, tH: 300}),
+                        new DynamicAnomaly({type: 'proximityDrop', x: 500, y: 50, tX: 450, tY: 100, tW: 100, tH: 400})
+                    ]
+                },
+                // Phase 3: Emitter Fields
+                {
+                    origin: {x: 50, y: 100},
+                    target: new ConvergenceZone(800, 500),
+                    structures: [
+                        new StructuralBound(0, 150, 150, 20),
+                        new StructuralBound(200, 250, 150, 20),
+                        new StructuralBound(400, 350, 150, 20),
+                        new StructuralBound(600, 450, 150, 20),
+                        new StructuralBound(750, 550, 150, 50)
+                    ],
+                    anomalies: [
+                        new DynamicAnomaly({type: 'emitter', x: 880, y: 220, interval: 1500, eVX: -200, eVY: 0}),
+                        new DynamicAnomaly({type: 'emitter', x: 0, y: 320, interval: 1200, eVX: 250, eVY: 0}),
+                        new DynamicAnomaly({type: 'oscillator', x: 400, y: 330, min: 400, max: 550, speed: 80})
+                    ]
+                },
+                // Phase 4: Compound Variances
+                {
+                    origin: {x: 50, y: 500},
+                    target: new ConvergenceZone(50, 100),
+                    structures: [
+                        new StructuralBound(0, 550, 900, 50),
+                        new StructuralBound(200, 450, 150, 20),
+                        new StructuralBound(500, 350, 150, 20),
+                        new StructuralBound(700, 250, 100, 20),
+                        new StructuralBound(400, 150, 150, 20),
+                        new StructuralBound(200, 200, 100, 20),
+                        new StructuralBound(0, 150, 150, 20)
+                    ],
+                    anomalies: [
+                        new DynamicAnomaly({type: 'oscillator', x: 200, y: 530, min: 200, max: 800, speed: 200}),
+                        new DynamicAnomaly({type: 'emitter', x: 450, y: -20, interval: 1000, eVX: 0, eVY: 250}),
+                        new DynamicAnomaly({type: 'proximityDrop', x: 250, y: 0, tX: 200, tY: 150, tW: 100, tH: 100})
+                    ]
+                },
+                // Phase 5: Convergence Test
+                {
+                    origin: {x: 50, y: 500},
+                    target: new ConvergenceZone(800, 100),
+                    structures: [
+                        new StructuralBound(0, 550, 150, 50),
+                        new StructuralBound(200, 450, 80, 20),
+                        new StructuralBound(350, 380, 80, 20),
+                        new StructuralBound(500, 300, 80, 20),
+                        new StructuralBound(650, 220, 80, 20),
+                        new StructuralBound(750, 150, 150, 50)
+                    ],
+                    anomalies: [
+                        new DynamicAnomaly({type: 'emitter', x: 880, y: 420, interval: 800, eVX: -300, eVY: 0}),
+                        new DynamicAnomaly({type: 'emitter', x: 880, y: 280, interval: 1000, eVX: -250, eVY: 0}),
+                        new DynamicAnomaly({type: 'proximityDrop', x: 380, y: -20, tX: 300, tY: 200, tW: 200, tH: 300}),
+                        new DynamicAnomaly({type: 'proximityDrop', x: 680, y: -20, tX: 600, tY: 100, tW: 150, tH: 300})
+                    ]
                 }
-                return false;
+            ];
+
+            const pNode = new PrimaryNode();
+            let activePhase = null;
+
+            function loadPhase(index) {
+                if (index >= phaseDatasets.length) {
+                    completeSimulation();
+                    return;
+                }
+                const data = phaseDatasets[index];
+                // Deep copy anomalies to reset their states entirely
+                activePhase = {
+                    origin: data.origin,
+                    target: data.target,
+                    structures: data.structures,
+                    anomalies: data.anomalies.map(a => new DynamicAnomaly(JSON.parse(JSON.stringify(a)))) 
+                };
+                pNode.resetPosition();
+                document.getElementById('data-phase').innerText = index + 1;
             }
 
-            render(context) {
-                context.font = '30px "JetBrains Mono"';
-                if (this.behavior === 'oscillate' || (this.behavior === 'proximityDrop' && this.isActivated) || this.behavior === 'particleEmitter') {
-                    if(this.behavior !== 'particleEmitter') context.fillText(this.identifier, this.x, this.y);
-                }
+            function showOverlay(title, desc, btnText, btnAction) {
+                activeSequence = false;
+                document.getElementById('overlay-title').innerText = title;
+                document.getElementById('overlay-desc').innerText = desc;
+                const btn = document.getElementById('overlay-btn');
+                btn.innerText = btnText;
+                btn.onclick = btnAction;
+                overlay.classList.remove('hidden');
+            }
+
+            function hideOverlay() {
+                overlay.classList.add('hidden');
+                activeSequence = true;
+                lastTimestamp = performance.now();
+                tickRef = requestAnimationFrame(processTick);
+            }
+
+            function triggerRecalibration() {
+                if (!activeSequence) return;
+                cycleCount--;
+                document.getElementById('data-cycles').innerText = cycleCount;
                 
-                if (this.behavior === 'particleEmitter') {
-                    context.font = '20px "JetBrains Mono"';
-                    // Render base unit structure
-                    context.fillStyle = '#ff7b72';
-                    context.fillRect(this.x + 5, this.y + 5, 20, 20);
-                    for (let p of this.activeParticles) {
-                        context.fillText(this.particleIdent, p.x, p.y);
-                    }
-                }
-            }
-        }
-
-        const environmentData = [
-            {
-                designation: "Linear Trajectory Calibration",
-                originData: {x: 50, y: 480},
-                calibrationPoint: new CalibrationZone(800, 100),
-                structures: [
-                    new StaticBoundary(0, 550, 900, 50),
-                    new StaticBoundary(200, 450, 150, 20),
-                    new StaticBoundary(450, 350, 150, 20),
-                    new StaticBoundary(750, 150, 150, 20),
-                    new StaticBoundary(650, 250, 80, 20) 
-                ],
-                anomalies: [
-                    new DynamicObstacle({behavior: 'oscillate', x: 400, y: 520, velX: 120, minBoundX: 200, maxBoundX: 900}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 250, y: 50, sensorArea: {x: 200, y: 350, w: 150, h: 100}})
-                ]
-            },
-            {
-                designation: "Vertical Ascent with Emitters",
-                originData: {x: 50, y: 500},
-                calibrationPoint: new CalibrationZone(800, 480),
-                structures: [
-                    new StaticBoundary(0, 550, 150, 50), 
-                    new StaticBoundary(200, 400, 100, 20), 
-                    new StaticBoundary(350, 250, 100, 20), 
-                    new StaticBoundary(500, 150, 150, 20), 
-                    new StaticBoundary(750, 520, 150, 50), 
-                ],
-                anomalies: [
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 880, y: 220, emissionRate: 1500, particleVelX: -220, particleVelY: 0}),
-                    new DynamicObstacle({behavior: 'particleEmitter', x: -20, y: 350, emissionRate: 1800, particleVelX: 200, particleVelY: 0}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 550, y: -20, sensorArea: {x: 500, y: 150, w: 150, h: 400}})
-                ]
-            },
-            {
-                designation: "Proximity Trigger Assessment",
-                originData: {x: 30, y: 100},
-                calibrationPoint: new CalibrationZone(800, 480),
-                structures: [
-                    new StaticBoundary(0, 150, 150, 20),
-                    new StaticBoundary(200, 250, 100, 20),
-                    new StaticBoundary(350, 350, 100, 20),
-                    new StaticBoundary(500, 450, 100, 20),
-                    new StaticBoundary(750, 530, 150, 50),
-                    new StaticBoundary(0, 550, 300, 50), 
-                ],
-                anomalies: [
-                    new DynamicObstacle({behavior: 'oscillate', x: 50, y: 520, velX: 100, minBoundX: 0, maxBoundX: 300}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 220, y: 0, sensorArea: {x: 180, y: 200, w: 140, h: 100}}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 370, y: -50, sensorArea: {x: 330, y: 300, w: 140, h: 100}}),
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 400, emissionRate: 1200, particleVelX: -250, particleVelY: -80})
-                ]
-            },
-            {
-                designation: "Compound Oscillation Matrix",
-                originData: {x: 50, y: 480},
-                calibrationPoint: new CalibrationZone(50, 100),
-                structures: [
-                    new StaticBoundary(0, 550, 900, 50),
-                    new StaticBoundary(200, 450, 200, 20),
-                    new StaticBoundary(500, 350, 150, 20),
-                    new StaticBoundary(750, 250, 100, 20),
-                    new StaticBoundary(450, 150, 150, 20),
-                    new StaticBoundary(200, 200, 100, 20),
-                    new StaticBoundary(0, 150, 100, 20), 
-                ],
-                anomalies: [
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 450, y: -10, emissionRate: 1000, particleVelX: 0, particleVelY: 200}),
-                    new DynamicObstacle({behavior: 'oscillate', x: 200, y: 420, velX: 180, minBoundX: 200, maxBoundX: 400}), 
-                    new DynamicObstacle({behavior: 'oscillate', x: 500, y: 320, velX: 150, minBoundX: 500, maxBoundX: 650}),
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 120, emissionRate: 2000, particleVelX: -300, particleVelY: 0}) 
-                ]
-            },
-            {
-                designation: "Terminal Velocity Validation",
-                originData: {x: 20, y: 480},
-                calibrationPoint: new CalibrationZone(820, 100),
-                structures: [
-                    new StaticBoundary(0, 550, 100, 50), 
-                    new StaticBoundary(150, 450, 80, 20),
-                    new StaticBoundary(300, 380, 80, 20),
-                    new StaticBoundary(450, 300, 80, 20),
-                    new StaticBoundary(600, 220, 80, 20),
-                    new StaticBoundary(750, 150, 150, 20)
-                ],
-                anomalies: [
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 0, y: 350, emissionRate: 1500, particleVelX: 250, particleVelY: 0}),
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 900, y: 250, emissionRate: 1500, particleVelX: -250, particleVelY: 0}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 320, y: 0, sensorArea: {x: 280, y: 300, w: 120, h: 200}, gravityForce: 1500}),
-                    new DynamicObstacle({behavior: 'proximityDrop', x: 620, y: -50, sensorArea: {x: 580, y: 150, w: 120, h: 200}, gravityForce: 1500}),
-                    new DynamicObstacle({behavior: 'particleEmitter', x: 450, y: 0, emissionRate: 800, particleVelX: 0, particleVelY: 300})
-                ]
-            }
-        ];
-
-        let primaryAgent = new AutonomousAgent(0, 0);
-        let activeEnvironment = null;
-
-        function loadEnvironment(index) {
-            if (index >= environmentData.length) {
-                concludeAnalysis();
-                return;
-            }
-            const data = environmentData[index];
-            
-            // Deep copy anomalies to reset state for new attempts
-            activeEnvironment = {
-                calibrationPoint: data.calibrationPoint,
-                structures: data.structures,
-                anomalies: data.anomalies.map(a => new DynamicObstacle({...a})) 
-            };
-            
-            primaryAgent.originX = data.originData.x;
-            primaryAgent.originY = data.originData.y;
-            primaryAgent.restoreOrigin();
-            
-            telemetry.env.textContent = `0${index + 1}/05`;
-        }
-
-        function executeSimulation() {
-            systemState = 'ACTIVE';
-            currentEnvIndex = 0;
-            availableIterations = 5;
-            updateTelemetryDisplay();
-            
-            uptimeStart = Date.now();
-            elapsedMilliseconds = 0;
-            
-            panels.init.classList.add('hidden-state');
-            panels.term.classList.add('hidden-state');
-            panels.conc.classList.add('hidden-state');
-            
-            loadEnvironment(currentEnvIndex);
-            
-            clockInterval = setInterval(() => {
-                if (systemState === 'ACTIVE') {
-                    elapsedMilliseconds = Date.now() - uptimeStart;
-                    telemetry.uptime.textContent = (elapsedMilliseconds / 1000).toFixed(2) + 's';
-                }
-            }, 50);
-
-            previousTimestamp = performance.now();
-            requestAnimationFrame(processFrame);
-        }
-
-        function resetSystem() {
-            clearInterval(clockInterval);
-            executeSimulation();
-        }
-
-        function updateTelemetryDisplay() {
-            telemetry.iter.textContent = availableIterations;
-            if (availableIterations <= 2) telemetry.iter.style.color = '#ff7b72';
-            else telemetry.iter.style.color = '#3fb950';
-        }
-
-        function triggerSystemReset() {
-            if (systemState !== 'ACTIVE') return;
-            availableIterations--;
-            updateTelemetryDisplay();
-            
-            if (availableIterations <= 0) {
-                systemState = 'TERMINATED';
-                panels.term.classList.remove('hidden-state');
-                clearInterval(clockInterval);
-            } else {
-                // Visual feedback for anomaly intersection
-                ctx.fillStyle = 'rgba(255, 123, 114, 0.4)';
-                ctx.fillRect(0,0,canvas.width, canvas.height);
-                
-                setTimeout(() => {
-                    if(systemState === 'ACTIVE') loadEnvironment(currentEnvIndex);
-                }, 100);
-            }
-        }
-
-        function advanceEnvironment() {
-            systemState = 'PROCESSING';
-            document.getElementById('transition-log').textContent = `Calibration complete for Environment 0${currentEnvIndex + 1}. Transitioning...`;
-            panels.trans.classList.remove('hidden-state');
-
-            setTimeout(() => {
-                currentEnvIndex++;
-                if (currentEnvIndex < environmentData.length) {
-                    panels.trans.classList.add('hidden-state');
-                    loadEnvironment(currentEnvIndex);
-                    systemState = 'ACTIVE';
-                    previousTimestamp = performance.now();
-                    requestAnimationFrame(processFrame);
+                if (cycleCount <= 0) {
+                    document.getElementById('data-status').innerText = 'CRITICAL FAILURE';
+                    document.getElementById('data-status').style.color = '#ff7b72';
+                    showOverlay('ITERATION LIMIT REACHED', 'The primary node was compromised.', 'RESTART DATASET', () => {
+                        cycleCount = 5;
+                        currentPhaseIndex = 0;
+                        document.getElementById('data-cycles').innerText = cycleCount;
+                        document.getElementById('data-status').innerText = 'NOMINAL';
+                        document.getElementById('data-status').style.color = '#3fb950';
+                        loadPhase(currentPhaseIndex);
+                        hideOverlay();
+                    });
                 } else {
-                    panels.trans.classList.add('hidden-state');
-                    concludeAnalysis();
+                    // Flash red
+                    ctx.fillStyle = 'rgba(255, 123, 114, 0.4)';
+                    ctx.fillRect(0,0,cvs.width, cvs.height);
+                    activeSequence = false;
+                    setTimeout(() => {
+                        loadPhase(currentPhaseIndex); // reload to reset anomalies
+                        activeSequence = true;
+                        lastTimestamp = performance.now();
+                        requestAnimationFrame(processTick);
+                    }, 200);
                 }
-            }, 2000);
-        }
-
-        function concludeAnalysis() {
-            systemState = 'CONCLUDED';
-            clearInterval(clockInterval);
-            document.getElementById('final-uptime-metric').textContent = (elapsedMilliseconds / 1000).toFixed(2) + ' seconds';
-            panels.conc.classList.remove('hidden-state');
-        }
-
-        function processFrame(currentTimestamp) {
-            if (systemState !== 'ACTIVE') return;
-
-            const deltaTime = (currentTimestamp - previousTimestamp) / 1000;
-            previousTimestamp = currentTimestamp;
-
-            // Frame cap to maintain physics stability
-            if (deltaTime > 0.1) {
-                requestAnimationFrame(processFrame);
-                return;
             }
 
-            // Kinematic Updates
-            primaryAgent.calculateKinematics(deltaTime, activeEnvironment.structures);
-            
-            for (let anomaly of activeEnvironment.anomalies) {
-                anomaly.processBehaviors(deltaTime, primaryAgent);
+            function advancePhase() {
+                activeSequence = false;
+                currentPhaseIndex++;
+                if (currentPhaseIndex < phaseDatasets.length) {
+                    showOverlay('DATASET ACQUIRED', `Proceeding to phase ${currentPhaseIndex + 1}...`, 'CONTINUE', () => {
+                        loadPhase(currentPhaseIndex);
+                        hideOverlay();
+                    });
+                } else {
+                    completeSimulation();
+                }
             }
 
-            // Calibration Zone Intersection Check
-            let aRect = primaryAgent.getSpatialCoordinates();
-            let cZone = activeEnvironment.calibrationPoint;
-            if (aRect.x < cZone.x + cZone.w && aRect.x + aRect.w > cZone.x &&
-                aRect.y < cZone.y + cZone.h && aRect.y + aRect.h > cZone.y) {
-                advanceEnvironment();
-                return; 
+            function completeSimulation() {
+                activeSequence = false;
+                document.getElementById('data-status').innerText = 'CONVERGENCE ACHIEVED';
+                showOverlay('ANALYSIS COMPLETE', 'All datasets have been successfully processed.', 'RESTART SEQUENCE', () => {
+                    cycleCount = 5;
+                    currentPhaseIndex = 0;
+                    document.getElementById('data-cycles').innerText = cycleCount;
+                    document.getElementById('data-status').innerText = 'NOMINAL';
+                    loadPhase(currentPhaseIndex);
+                    hideOverlay();
+                });
             }
 
-            // Viewport Rendering Clear
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            function processTick(timestamp) {
+                if (!activeSequence) return;
+                
+                const delta = (timestamp - lastTimestamp) / 1000;
+                lastTimestamp = timestamp;
 
-            // Render entities
-            for (let structure of activeEnvironment.structures) structure.render(ctx);
-            activeEnvironment.calibrationPoint.render(ctx);
-            for (let anomaly of activeEnvironment.anomalies) anomaly.render(ctx);
-            primaryAgent.render(ctx);
+                if (delta > 0.1) { 
+                    tickRef = requestAnimationFrame(processTick);
+                    return; 
+                }
 
-            requestAnimationFrame(processFrame);
+                // Process Kinematics
+                pNode.computeTrajectory(delta);
+                for (let anomaly of activePhase.anomalies) {
+                    anomaly.processVariance(delta, pNode);
+                }
+
+                // Check Convergence
+                const t = activePhase.target;
+                if (pNode.x < t.x + t.w && pNode.x + pNode.w > t.x &&
+                    pNode.y < t.y + t.h && pNode.y + pNode.h > t.y) {
+                    advancePhase();
+                    return;
+                }
+
+                // Render Pipeline
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+                for (let struct of activePhase.structures) struct.render();
+                activePhase.target.render();
+                for (let anomaly of activePhase.anomalies) anomaly.render();
+                pNode.render();
+
+                tickRef = requestAnimationFrame(processTick);
+            }
+
+            // Begin
+            loadPhase(0);
+            showOverlay('INITIATION', 'Use standard vectors (W,A,S,D/Arrows) to guide the node (Δ) to the target (∑).', 'COMMENCE', hideOverlay);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const trigger = document.getElementById('activation-target');
+            if(trigger) {
+                trigger.addEventListener('dblclick', () => {
+                    // Remove listener to prevent multiple invocations
+                    trigger.replaceWith(trigger.cloneNode(true));
+                    initSim();
+                });
+            }
+        });
     </script>
 </body>
 </html>
