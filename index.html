@@ -3,16 +3,17 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Zouse of Zazards: Sibling Sabotage</title>
+   <title>Zouse of Zazards: Household Chaos</title>
    <style>
        :root {
-           --bg-color: #222;
-           --text-color: #eee;
-           --highlight: #007BFF;
-           --danger: #DC3545;
+           --bg-color: #1a1a1a;
+           --text-color: #f0f0f0;
+           --p1-color: #007BFF;
+           --p2-color: #DC3545;
+           --ui-bg: #333;
        }
        body {
-           font-family: Arial, sans-serif;
+           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
            background-color: var(--bg-color);
            color: var(--text-color);
            margin: 0;
@@ -27,21 +28,21 @@
            text-align: center;
            border: 2px solid #555;
            padding: 40px;
-           background: #333;
-           box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+           background: #2a2a2a;
+           box-shadow: 5px 5px 20px rgba(0,0,0,0.8);
+           border-radius: 12px;
            cursor: pointer;
-           border-radius: 8px;
        }
-       #decoy-container h1 { margin-top: 0; color: #fff; }
+       #decoy-container h1 { margin-top: 0; color: #FFC107; font-size: 2.5em; }
        #sim-wrapper {
            display: none;
            position: relative;
            width: 1000px;
-           height: 650px;
-           background-color: #e0e0e0;
-           box-shadow: 0px 10px 30px rgba(0,0,0,0.8);
-           border: 4px solid #444;
-           border-radius: 8px;
+           height: 700px;
+           background-color: #000;
+           box-shadow: 0px 10px 40px rgba(0,0,0,0.9);
+           border: 6px solid #444;
+           border-radius: 12px;
            overflow: hidden;
        }
        canvas {
@@ -57,67 +58,87 @@
            flex-direction: column;
            justify-content: space-between;
        }
-       .hud-bar, .hud-footer {
+       .hud-top {
            display: flex;
            justify-content: space-between;
+           align-items: center;
            padding: 10px 20px;
-           background: rgba(34, 34, 34, 0.9);
+           background: rgba(0, 0, 0, 0.85);
            font-weight: bold;
-           font-size: 14px;
-           border-bottom: 2px solid #444;
+           font-size: 18px;
+           border-bottom: 3px solid #555;
        }
-       .hud-footer { border-bottom: none; border-top: 2px solid #444; }
-       .message-box {
+       .score-board {
+           font-size: 24px;
+           display: flex;
+           gap: 20px;
+       }
+       .p1-score { color: var(--p1-color); }
+       .p2-score { color: var(--p2-color); }
+       
+       #task-display {
+           color: #FFC107;
+           text-transform: uppercase;
+           font-size: 28px;
+           text-shadow: 2px 2px 0px #000;
+           text-align: center;
+           flex-grow: 1;
+       }
+       .hud-bottom {
+           padding: 10px 20px;
+           background: rgba(0, 0, 0, 0.85);
+           border-top: 3px solid #555;
+           display: flex;
+           justify-content: space-between;
+           font-size: 14px;
+       }
+       .player-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; color: white; font-weight: bold; }
+       
+       #overlay-msg {
            position: absolute;
            top: 50%; left: 50%;
            transform: translate(-50%, -50%);
-           background: #fff;
-           color: #222;
-           border: 4px solid #444;
-           border-radius: 8px;
-           padding: 30px;
+           background: rgba(0,0,0,0.9);
+           border: 4px solid #FFC107;
+           border-radius: 12px;
+           padding: 40px;
            text-align: center;
-           box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
            display: none;
+           box-shadow: 0px 10px 30px rgba(0,0,0,1);
        }
-       .btn {
-           background: var(--highlight);
-           color: #fff;
-           border: none;
-           border-radius: 4px;
-           padding: 12px 24px;
-           font-size: 16px;
-           font-weight: bold;
-           cursor: pointer;
-           pointer-events: auto;
-           margin-top: 15px;
-       }
-       .btn:hover { background: #0056b3; }
-       .player-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; color: white; }
+       #overlay-msg h2 { margin: 0 0 10px 0; font-size: 36px; color: #fff; text-transform: uppercase; }
+       #overlay-msg p { margin: 0; font-size: 20px; color: #ccc; }
    </style>
 </head>
 <body>
    <div id="decoy-container">
-       <h1>Grandma's House Rules</h1>
-       <p>A Co-Op Platforming Experience (With Sabotage)</p>
-       <p style="margin-top:30px; font-size: 0.9em; color:#aaa;">[ DOUBLE CLICK TO START ]</p>
+       <h1>HOUSE OF HAZARDS</h1>
+       <p>A Chaotic Multiplayer Race in a Suburban Home</p>
+       <p style="margin-top:30px; font-size: 0.9em; color:#888;">[ DOUBLE CLICK TO ENTER ]</p>
    </div>
 
    <div id="sim-wrapper">
-       <canvas id="sim-canvas" width="1000" height="650"></canvas>
+       <canvas id="sim-canvas" width="1000" height="700"></canvas>
        <div id="ui-layer">
-           <div class="hud-bar">
-               <div><span class="player-tag" style="background: #007BFF">P1</span> W,A,S,D + <b>SPACE (Shove)</b></div>
-               <div id="debuff-display" style="color: #DC3545; text-transform: uppercase;">MODIFIER: NONE</div>
-               <div><span class="player-tag" style="background: #DC3545">P2</span> ARROWS + <b>SHIFT (Shove)</b></div>
+           <div class="hud-top">
+               <div class="score-board">
+                   <span class="p1-score">P1: <span id="score-p1">0</span></span>
+               </div>
+               <div id="task-display">TASK: WAITING...</div>
+               <div class="score-board">
+                   <span class="p2-score">P2: <span id="score-p2">0</span></span>
+               </div>
            </div>
-           <div class="message-box" id="msg-box">
-               <h2 id="msg-title" style="margin:0 0 10px 0;"></h2>
-               <p id="msg-desc" style="margin:0 0 15px 0; color:#555;"></p>
-               <button class="btn" id="msg-btn">CONTINUE</button>
+           
+           <div id="overlay-msg">
+               <h2 id="msg-title">ROUND OVER</h2>
+               <p id="msg-desc">Player 1 Wins the Round!</p>
            </div>
-           <div class="hud-footer">
-               <div id="progress-tracker">TIER: 1 / 8</div>
+
+           <div class="hud-bottom">
+               <div><span class="player-tag" style="background: var(--p1-color)">P1</span> W,A,S,D + <b>SPACE (Shove)</b></div>
+               <div style="color: #aaa;">FIRST TO 5 WINS</div>
+               <div><span class="player-tag" style="background: var(--p2-color)">P2</span> ARROWS + <b>SHIFT (Shove)</b></div>
            </div>
        </div>
    </div>
@@ -128,36 +149,18 @@
        const cvs = document.getElementById('sim-canvas');
        const ctx = cvs.getContext('2d');
 
-       // External Images
-       const imgGrandma = new Image();
-       imgGrandma.src = "https://images.unsplash.com/photo-1531686264889-56fdcabd163f?w=150&h=150&fit=crop"; 
-       
-       const imgWalker = new Image();
-       imgWalker.src = "https://plus.unsplash.com/premium_photo-1663089688180-444ff0066e5d?w=100&h=100&fit=crop"; 
-
-       // Game Globals
-       let activeSeq = false;
+       // --- GAME GLOBALS ---
        let lastTime = 0;
-       let camera = { x: 0, y: 0 };
+       let gameState = 'INIT'; // INIT, COUNTDOWN, PLAYING, ROUND_OVER, GAME_OVER
+       let roundTimer = 0;
        let screenShake = 0;
        let particles = [];
        let projectiles = [];
-       let currentTier = 0;
-       let activeDebuff = null;
        
-       const TIER_HEIGHT = 450;
-       const MAP_WIDTH = 4000;
-       const TOTAL_TIERS = 8;
+       let scores = { p1: 0, p2: 0 };
+       const WIN_SCORE = 5;
 
-       const DEBUFFS = [
-           { name: "ICE FLOOR", effect: (p) => p.friction = 0.99 },
-           { name: "HEAVY GRAVITY", effect: (p) => { p.grav = 2000; p.jumpForce = 600; } },
-           { name: "MOON JUMP", effect: (p) => { p.grav = 700; p.jumpForce = 500; } },
-           { name: "SLUGGISH", effect: (p) => p.accel = 1000 }
-       ];
-
-       let mapData = { structures: [], traps: [], checkpoints: [], goals: [] };
-
+       // Input
        const keys = {
            p1: { left: false, right: false, up: false, action: false },
            p2: { left: false, right: false, up: false, action: false }
@@ -168,7 +171,6 @@
            if (e.code === 'KeyD') keys.p1.right = true;
            if (e.code === 'KeyW') keys.p1.up = true;
            if (e.code === 'Space') keys.p1.action = true;
-           
            if (e.code === 'ArrowLeft') keys.p2.left = true;
            if (e.code === 'ArrowRight') keys.p2.right = true;
            if (e.code === 'ArrowUp') keys.p2.up = true;
@@ -179,64 +181,88 @@
            if (e.code === 'KeyD') keys.p1.right = false;
            if (e.code === 'KeyW') keys.p1.up = false;
            if (e.code === 'Space') keys.p1.action = false;
-           
            if (e.code === 'ArrowLeft') keys.p2.left = false;
            if (e.code === 'ArrowRight') keys.p2.right = false;
            if (e.code === 'ArrowUp') keys.p2.up = false;
            if (e.code === 'ShiftRight' || e.code === 'ShiftLeft') keys.p2.action = false;
        });
 
+       // --- HOUSE ENVIRONMENT ---
+       const rooms = [
+           { name: 'Bedroom', color: '#c7bde6', x: 0, y: 0, w: 500, h: 320 },
+           { name: 'Bathroom', color: '#bde6df', x: 500, y: 0, w: 500, h: 320 },
+           { name: 'Living Room', color: '#e6dfbd', x: 0, y: 320, w: 500, h: 380 },
+           { name: 'Kitchen', color: '#e6c7bd', x: 500, y: 320, w: 500, h: 380 }
+       ];
+
+       const structures = [
+           // Floors
+           { x: 0, y: 640, w: 1000, h: 60, type: 'floor' }, // Ground
+           { x: 0, y: 300, w: 350, h: 20, type: 'floor' },  // L2 Left
+           { x: 650, y: 300, w: 350, h: 20, type: 'floor' }, // L2 Right
+           // Stairs (Platforms)
+           { x: 420, y: 550, w: 160, h: 15, type: 'plat' },
+           { x: 420, y: 460, w: 160, h: 15, type: 'plat' },
+           { x: 420, y: 370, w: 160, h: 15, type: 'plat' },
+           // Walls
+           { x: -20, y: 0, w: 20, h: 700, type: 'wall' },
+           { x: 1000, y: 0, w: 20, h: 700, type: 'wall' }
+       ];
+
+       const TASKS = [
+           { text: "GRAB A SNACK", target: { x: 880, y: 510, w: 80, h: 130 }, icon: "🍎", room: 'Kitchen' },
+           { text: "WATCH TV", target: { x: 50, y: 570, w: 100, h: 70 }, icon: "📺", room: 'Living Room' },
+           { text: "GO TO SLEEP", target: { x: 50, y: 250, w: 120, h: 50 }, icon: "🛏️️", room: 'Bedroom' },
+           { text: "BRUSH TEETH", target: { x: 850, y: 220, w: 80, h: 80 }, icon: "🪥", room: 'Bathroom' }
+       ];
+       let currentTask = null;
+
+       // --- CLASSES ---
        class Player {
            constructor(id, color, inputs) {
                this.id = id;
                this.color = color;
                this.inputs = inputs;
                this.w = 30; this.h = 30;
-               this.dead = false;
-               this.pushCooldown = 0;
-               this.resetPhysics();
+               this.reset();
            }
-           resetPhysics() {
+           reset() {
+               this.x = 485; 
+               this.y = 580; // Start at bottom middle (Stairs bottom)
                this.vx = 0; this.vy = 0;
                this.grounded = false;
-               this.accel = 2500;
-               this.friction = 0.82;
-               this.grav = 1400;
-               this.jumpForce = 750;
-           }
-           applyDebuff() {
-               this.resetPhysics();
-               if (activeDebuff) activeDebuff.effect(this);
-           }
-           spawnAt(cp) {
-               this.x = cp.x;
-               this.y = cp.y;
                this.dead = false;
                this.pushCooldown = 0;
-               this.applyDebuff();
+               
+               this.accel = 2200;
+               this.friction = 0.80; // slippery
+               this.grav = 1600;
+               this.jumpForce = 750;
+               this.knockback = false;
            }
            die() {
                if(this.dead) return;
                this.dead = true;
-               screenShake = 15;
-               for(let i=0; i<25; i++) particles.push(new Particle(this.x + this.w/2, this.y + this.h/2, this.color));
-               checkTeamWipe();
+               screenShake = 12;
+               for(let i=0; i<30; i++) particles.push(new Particle(this.x + this.w/2, this.y + this.h/2, this.color));
+               checkRoundEnd();
            }
            update(dt, other) {
-               if (this.dead) return;
+               if (this.dead || gameState !== 'PLAYING') return;
+
                if (this.pushCooldown > 0) this.pushCooldown -= dt;
 
-               // Sabotage Mechanics (Shove)
+               // Shove Mechanic
                if (this.inputs.action && this.pushCooldown <= 0 && !other.dead) {
                    let dx = other.x - this.x;
                    let dy = other.y - this.y;
-                   if (Math.hypot(dx, dy) < 60) {
+                   if (Math.hypot(dx, dy) < 70) {
                        let dir = (dx > 0) ? 1 : -1;
-                       other.vx = dir * 2000; 
-                       other.vy = -500;
+                       other.vx = dir * 1800; 
+                       other.vy = -400;
                        this.pushCooldown = 1.0;
-                       screenShake = 8;
-                       for(let i=0; i<10; i++) particles.push(new Particle(this.x+this.w/2, this.y+this.h/2, "#fff"));
+                       screenShake = 5;
+                       for(let i=0; i<8; i++) particles.push(new Particle(this.x+this.w/2, this.y+this.h/2, "#fff"));
                    }
                }
 
@@ -252,43 +278,48 @@
                }
 
                this.x += this.vx * dt;
-               this.resolveMapCollision('x');
+               this.resolveCollision('x');
                this.y += this.vy * dt;
                this.grounded = false;
-               this.resolveMapCollision('y');
+               this.resolveCollision('y');
 
-               // Traps Collision
-               for(let t of mapData.traps) {
-                   if (t.checkHit(this)) this.die();
-               }
-               for(let p of projectiles) {
-                   if(this.x < p.x+p.w && this.x+this.w > p.x && this.y < p.y+p.h && this.y+this.h > p.y) this.die();
-               }
+               // Check Traps
+               for(let t of traps) if (t.checkHit(this)) this.die();
+               for(let p of projectiles) if(this.x < p.x+p.w && this.x+this.w > p.x && this.y < p.y+p.h && this.y+this.h > p.y) this.die();
 
                // Check Goal
-               for(let g of mapData.goals) {
-                   if (g.tier === currentTier && this.x < g.x+g.w && this.x+this.w > g.x && this.y < g.y+g.h && this.y+this.h > g.y) {
-                       reachCheckpoint(g.tier + 1);
+               if (currentTask) {
+                   let tgt = currentTask.target;
+                   if (this.x < tgt.x+tgt.w && this.x+this.w > tgt.x && this.y < tgt.y+tgt.h && this.y+this.h > tgt.y) {
+                       winRound(this.id);
                    }
                }
-
-               if (this.y > (TOTAL_TIERS+1)*TIER_HEIGHT) this.die();
            }
-           resolveMapCollision(axis) {
-               for (let s of mapData.structures) {
+           resolveCollision(axis) {
+               for (let s of structures) {
                    if (this.x < s.x + s.w && this.x + this.w > s.x && this.y < s.y + s.h && this.y + this.h > s.y) {
-                       if (axis === 'x') {
-                           if (this.vx > 0) this.x = s.x - this.w;
-                           else if (this.vx < 0) this.x = s.x + s.w;
-                           this.vx = 0;
-                       } else {
-                           if (this.vy > 0) {
+                       // Jump-through platforms logic
+                       if (s.type === 'plat') {
+                           if (axis === 'y' && this.vy > 0 && this.y + this.h - this.vy * 0.016 <= s.y + 10) {
                                this.y = s.y - this.h;
+                               this.vy = 0;
                                this.grounded = true;
-                           } else if (this.vy < 0) {
-                               this.y = s.y + s.h;
                            }
-                           this.vy = 0;
+                       } else {
+                           // Solid wall/floor
+                           if (axis === 'x') {
+                               if (this.vx > 0) this.x = s.x - this.w;
+                               else if (this.vx < 0) this.x = s.x + s.w;
+                               this.vx = 0;
+                           } else {
+                               if (this.vy > 0) {
+                                   this.y = s.y - this.h;
+                                   this.grounded = true;
+                               } else if (this.vy < 0) {
+                                   this.y = s.y + s.h;
+                               }
+                               this.vy = 0;
+                           }
                        }
                    }
                }
@@ -297,10 +328,16 @@
                if(this.dead) return;
                ctx.fillStyle = this.color;
                ctx.fillRect(this.x, this.y, this.w, this.h);
-               // Draw cooldown indicator
+               // Eyes
+               ctx.fillStyle = "#fff";
+               let faceX = (this.vx > 0) ? 14 : (this.vx < 0) ? 6 : 10;
+               ctx.fillRect(this.x + faceX, this.y + 6, 4, 6);
+               ctx.fillRect(this.x + faceX + 8, this.y + 6, 4, 6);
+               
+               // Cooldown ring
                if(this.pushCooldown > 0) {
-                   ctx.fillStyle = "rgba(255,255,255,0.5)";
-                   ctx.fillRect(this.x, this.y + this.h - 5, this.w * (1 - this.pushCooldown), 5);
+                   ctx.fillStyle = "rgba(255,255,255,0.7)";
+                   ctx.fillRect(this.x, this.y + this.h - 6, this.w * (1 - this.pushCooldown), 6);
                }
            }
        }
@@ -309,16 +346,17 @@
            constructor(x, y, color) {
                this.x = x; this.y = y;
                this.color = color;
-               this.size = Math.random() * 6 + 4;
+               this.size = Math.random() * 8 + 4;
                this.life = 1.0;
                let angle = Math.random() * Math.PI * 2;
-               let speed = Math.random() * 300 + 100;
+               let speed = Math.random() * 400 + 100;
                this.vx = Math.cos(angle) * speed;
                this.vy = Math.sin(angle) * speed;
            }
            update(dt) {
                this.x += this.vx * dt;
                this.y += this.vy * dt;
+               this.vy += 1000 * dt; // gravity
                this.life -= dt * 1.5;
            }
            draw() {
@@ -332,267 +370,266 @@
 
        // --- TRAPS ---
        class Trap {
-           constructor(x, y) { this.x = x; this.y = y; this.active = true; }
-           update(dt) {} draw() {} checkHit(p) { return false; }
+           constructor(x, y, botId) { this.x = x; this.y = y; this.botId = botId; this.state = 'idle'; this.timer = 0; }
+           trigger() { if (this.state === 'idle') { this.state = 'warn'; this.timer = 0.5; } } // Default warn time
+           update(dt) {}
+           draw() {}
+           checkHit(p) { return false; }
+           distToTarget() {
+               // Bots check how close players are to decide if they should trigger
+               let d = 9999;
+               if(!p1.dead) d = Math.min(d, Math.hypot(p1.x - this.x, p1.y - this.y));
+               if(!p2.dead) d = Math.min(d, Math.hypot(p2.x - this.x, p2.y - this.y));
+               return d;
+           }
        }
 
-       class Spike extends Trap {
-           constructor(x, y) { super(x, y); this.w = 40; this.h = 20; }
-           checkHit(p) { return (p.x < this.x+this.w-5 && p.x+p.w > this.x+5 && p.y+p.h > this.y && p.y < this.y+this.h); }
+       class FallingLamp extends Trap {
+           constructor(x, y) { super(x, y, 1); this.w = 40; this.h = 40; this.baseY = y; }
+           update(dt) {
+               if (this.state === 'warn') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) { this.state = 'fall'; this.vy = 0; }
+               } else if (this.state === 'fall') {
+                   this.vy += 2000 * dt;
+                   this.y += this.vy * dt;
+                   if (this.y > 600) { this.state = 'reset'; this.timer = 2.0; screenShake = 8; }
+               } else if (this.state === 'reset') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) { this.y = this.baseY; this.state = 'idle'; }
+               }
+           }
+           checkHit(p) { return this.state === 'fall' && (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h); }
            draw() {
-               ctx.fillStyle = "#DC3545";
+               ctx.fillStyle = (this.state === 'warn' && Math.floor(this.timer*15)%2===0) ? "#FF0000" : "#F4D03F";
                ctx.beginPath();
-               ctx.moveTo(this.x + this.w/2, this.y - 10);
+               ctx.moveTo(this.x + this.w/2, this.y);
                ctx.lineTo(this.x + this.w, this.y + this.h);
                ctx.lineTo(this.x, this.y + this.h);
                ctx.fill();
+               // Cord
+               ctx.strokeStyle = "#222"; ctx.lineWidth = 2;
+               ctx.beginPath(); ctx.moveTo(this.x + this.w/2, 0); ctx.lineTo(this.x + this.w/2, this.y); ctx.stroke();
            }
        }
 
-       class Mine extends Trap {
-           constructor(x, y) { super(x, y); this.w = 30; this.h = 10; this.timer = -1; this.exploded = false; }
+       class Toaster extends Trap {
+           constructor(x, y) { super(x, y, 2); this.w = 50; this.h = 40; }
            update(dt) {
-               if (this.timer > 0) {
+               if (this.state === 'warn') {
                    this.timer -= dt;
-                   if (this.timer <= 0) this.explode();
+                   if (this.timer <= 0) {
+                       this.state = 'cooldown'; this.timer = 1.5;
+                       projectiles.push({x: this.x+10, y: this.y-10, w: 20, h: 20, vx: -300, vy: -600, color: '#C0392B'});
+                       projectiles.push({x: this.x+20, y: this.y-10, w: 20, h: 20, vx: -150, vy: -700, color: '#C0392B'});
+                   }
+               } else if (this.state === 'cooldown') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) this.state = 'idle';
                }
            }
-           explode() {
-               this.timer = 0; this.exploded = true; screenShake = 20;
-               [p1, p2].forEach(p => { if (!p.dead && Math.hypot(p.x - this.x, p.y - this.y) < 120) p.die(); });
-               for(let i=0; i<30; i++) particles.push(new Particle(this.x, this.y, "#FFC107"));
-           }
-           checkHit(p) {
-               if (this.exploded) return false;
-               let hit = (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h);
-               if (hit && this.timer === -1) this.timer = 0.5; // arm mine
-               return false;
-           }
            draw() {
-               if (this.exploded) return;
-               ctx.fillStyle = (this.timer > 0 && Math.floor(this.timer*15)%2===0) ? "#DC3545" : "#444";
-               ctx.beginPath(); ctx.arc(this.x+15, this.y+10, 15, Math.PI, 0); ctx.fill();
+               ctx.fillStyle = (this.state === 'warn') ? "#E74C3C" : "#95A5A6";
+               ctx.fillRect(this.x, this.y, this.w, this.h);
+               ctx.fillStyle = "#2C3E50";
+               ctx.fillRect(this.x+10, this.y-5, 30, 10);
            }
        }
 
-       class Crusher extends Trap {
-           constructor(x, y) { super(x, y); this.w = 60; this.h = 200; this.baseY = y; this.timer = Math.random() * 2; }
-           update(dt) {
-               this.timer += dt;
-               let cycle = this.timer % 3;
-               if (cycle < 0.2) this.y = this.baseY + (cycle/0.2)*200; // Drop
-               else if (cycle < 1.0) this.y = this.baseY + 200; // Hold
-               else this.y = this.baseY + 200 - ((cycle-1.0)/2.0)*200; // Rise
-           }
-           checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h); }
-           draw() {
-               ctx.fillStyle = "#888"; ctx.fillRect(this.x, this.baseY, this.w, this.y - this.baseY);
-               ctx.fillStyle = "#333"; ctx.fillRect(this.x, this.y, this.w, 40);
-               ctx.fillStyle = "#FFC107"; ctx.fillRect(this.x, this.y + 35, this.w, 5); // Warning stripe
-           }
-       }
-
-       class WalkerTrap extends Trap {
-           constructor(x, y, range) {
-               super(x, y);
-               this.w = 70; this.h = 70;
-               this.startX = x; this.maxX = x + range;
-               this.vx = 250;
-           }
+       class Roomba extends Trap {
+           constructor(x, y) { super(x, y, 3); this.w = 50; this.h = 20; this.vx = 150; }
+           trigger() { this.vx *= -1; } // Bots reverse it randomly
            update(dt) {
                this.x += this.vx * dt;
-               if (this.x > this.maxX) { this.x = this.maxX; this.vx *= -1; }
-               if (this.x < this.startX) { this.x = this.startX; this.vx *= -1; }
+               if (this.x < 550) { this.x = 550; this.vx = Math.abs(this.vx); }
+               if (this.x > 900) { this.x = 900; this.vx = -Math.abs(this.vx); }
            }
            checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h); }
            draw() {
-               if (imgWalker.complete && imgWalker.naturalHeight !== 0) {
-                   ctx.drawImage(imgWalker, this.x, this.y, this.w, this.h);
-               } else {
-                   ctx.fillStyle = "#666"; ctx.fillRect(this.x, this.y, this.w, this.h);
-                   ctx.fillStyle = "#fff"; ctx.fillText("WALKER", this.x+5, this.y+35);
+               ctx.fillStyle = "#34495E";
+               ctx.beginPath();
+               ctx.ellipse(this.x + this.w/2, this.y + this.h/2, this.w/2, this.h/2, 0, 0, Math.PI*2);
+               ctx.fill();
+               ctx.fillStyle = "#E74C3C";
+               ctx.fillRect(this.vx > 0 ? this.x + 35 : this.x + 10, this.y + 5, 5, 5); // Eye
+           }
+       }
+
+       class Cabinet extends Trap {
+           constructor(x, y, dir) { super(x, y, 4); this.w = 10; this.h = 80; this.dir = dir; }
+           update(dt) {
+               if (this.state === 'warn') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) { this.state = 'swing'; this.timer = 1.0; }
+               } else if (this.state === 'swing') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) this.state = 'idle';
+               }
+           }
+           checkHit(p) { 
+               if(this.state !== 'swing') return false;
+               let hitBox = { x: this.dir===1 ? this.x : this.x - 70, y: this.y, w: 80, h: this.h };
+               return (p.x < hitBox.x+hitBox.w && p.x+p.w > hitBox.x && p.y+p.h > hitBox.y && p.y < hitBox.y+hitBox.h);
+           }
+           draw() {
+               ctx.fillStyle = "#795548";
+               ctx.fillRect(this.x, this.y, this.w, this.h);
+               if (this.state === 'swing' || (this.state === 'warn' && Math.floor(this.timer*15)%2===0)) {
+                   ctx.fillStyle = "rgba(121, 85, 72, 0.8)";
+                   ctx.fillRect(this.dir===1 ? this.x : this.x - 70, this.y, 80, this.h); // open door
                }
            }
        }
 
-       class Emitter extends Trap {
-           constructor(x, y, dir) { super(x, y); this.w = 30; this.h = 30; this.dir = dir; this.cd = Math.random(); }
+       class Puddle extends Trap {
+           constructor(x, y) { super(x, y, 5); this.w = 100; this.h = 10; }
+           trigger() { if(this.state === 'idle') { this.state = 'active'; this.timer = 3.0; } }
            update(dt) {
-               this.cd -= dt;
-               if(this.cd <= 0) {
-                   projectiles.push({x: this.x+10, y: this.y+10, w:12, h:12, vx: this.dir * 450});
-                   this.cd = 1.5;
+               if (this.state === 'active') {
+                   this.timer -= dt;
+                   if (this.timer <= 0) this.state = 'idle';
+                   
+                   // Apply ice physics
+                   [p1, p2].forEach(p => {
+                       if (p.x+p.w/2 > this.x && p.x+p.w/2 < this.x+this.w && p.y+p.h >= this.y - 5) {
+                           p.friction = 0.99; // Slippery!
+                       } else {
+                           p.friction = 0.80; // Normal
+                       }
+                   });
                }
            }
            draw() {
-               ctx.fillStyle = "#333"; ctx.fillRect(this.x, this.y, this.w, this.h);
-               ctx.fillStyle = "#DC3545"; ctx.fillRect(this.dir===1 ? this.x+20 : this.x, this.y+10, 10, 10);
-           }
-       }
-
-       let p1 = new Player(1, "#007BFF", keys.p1);
-       let p2 = new Player(2, "#DC3545", keys.p2);
-
-       // --- MAP GENERATION ---
-       function buildMap() {
-           mapData = { structures: [], traps: [], checkpoints: [], goals: [] };
-           
-           mapData.structures.push({x: -100, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
-           mapData.structures.push({x: MAP_WIDTH, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
-
-           for(let i=0; i<TOTAL_TIERS; i++) {
-               let y = i * TIER_HEIGHT;
-               let floorY = y + TIER_HEIGHT - 40;
-               let isLR = (i % 2 === 0);
-
-               // Helper to mirror level design automatically left-to-right vs right-to-left
-               const placeStruct = (xOff, yOff, w, h) => {
-                   let actualX = isLR ? xOff : MAP_WIDTH - xOff - w;
-                   mapData.structures.push({x: actualX, y: floorY + yOff, w, h});
-               };
-               const placeTrap = (TrapClass, w, xOff, yOff, ...args) => {
-                   let actualX = isLR ? xOff : MAP_WIDTH - xOff - w;
-                   mapData.traps.push(new TrapClass(actualX, floorY + yOff, ...args));
-               };
-
-               // Checkpoint and Goal
-               let cpX = isLR ? 150 : MAP_WIDTH - 200;
-               mapData.checkpoints.push({x: cpX, y: floorY - 60});
-               let goalX = isLR ? MAP_WIDTH - 200 : 100;
-               mapData.goals.push({x: goalX, y: floorY - 120, w: 100, h: 120, tier: i});
-
-               // Unique Tier Designs
-               if (i === 0) {
-                   // TIER 1: Intro. Basic jumps.
-                   placeStruct(0, 0, 800, 40);
-                   placeStruct(1000, 0, 800, 40); placeTrap(Spike, 40, 1300, -20);
-                   placeStruct(2000, 0, MAP_WIDTH - 2000, 40);
-               } 
-               else if (i === 1) {
-                   // TIER 2: Crushers
-                   placeStruct(0, 0, MAP_WIDTH, 40);
-                   for(let d = 600; d < 3500; d += 600) {
-                       placeTrap(Crusher, 60, d, -300);
-                       placeStruct(d, -300, 60, 40); // ceiling anchor
-                   }
-               } 
-               else if (i === 2) {
-                   // TIER 3: The Hospital Hallway (Walkers)
-                   placeStruct(0, 0, MAP_WIDTH, 40);
-                   placeTrap(WalkerTrap, 70, 700, -70, 400);
-                   placeTrap(WalkerTrap, 70, 1500, -70, 500);
-                   placeTrap(WalkerTrap, 70, 2400, -70, 600);
-               } 
-               else if (i === 3) {
-                   // TIER 4: Minefield & Emitters
-                   placeStruct(0, 0, 500, 40);
-                   placeStruct(700, 0, 1200, 40);
-                   placeTrap(Mine, 30, 900, -10); placeTrap(Mine, 30, 1200, -10); placeTrap(Mine, 30, 1500, -10);
-                   placeStruct(2100, -100, 300, 40); placeTrap(Emitter, 30, 2250, -130, isLR ? -1 : 1);
-                   placeStruct(2600, 0, MAP_WIDTH - 2600, 40);
-               }
-               else if (i === 4) {
-                   // TIER 5: Platforming Over Void
-                   placeStruct(0, 0, 400, 40);
-                   for(let d = 600; d < 3200; d += 350) {
-                       placeStruct(d, (d%700===0) ? -50 : 0, 150, 40);
-                       if (d%2 !== 0) placeTrap(Spike, 40, d+50, (d%700===0) ? -70 : -20);
-                   }
-                   placeStruct(3400, 0, MAP_WIDTH-3400, 40);
-               }
-               else if (i === 5) {
-                   // TIER 6: Chaos Mix
-                   placeStruct(0, 0, MAP_WIDTH, 40);
-                   placeTrap(Crusher, 60, 800, -300); placeStruct(800, -300, 60, 40);
-                   placeTrap(WalkerTrap, 70, 1200, -70, 400);
-                   placeTrap(Mine, 30, 1800, -10);
-                   placeTrap(Emitter, 30, 2400, -30, isLR ? -1 : 1);
-                   placeTrap(Crusher, 60, 2800, -300); placeStruct(2800, -300, 60, 40);
-               }
-               else if (i === 6) {
-                   // TIER 7: Walker Gauntlet
-                   placeStruct(0, 0, MAP_WIDTH, 40);
-                   for(let d = 500; d < 3500; d += 450) {
-                       placeTrap(WalkerTrap, 70, d, -70, 200);
-                       placeStruct(d+100, -120, 80, 20); // platforms above them
-                   }
-               }
-               else if (i === 7) {
-                   // TIER 8: The Final Stretch to Grandma
-                   placeStruct(0, 0, MAP_WIDTH, 40);
-                   placeTrap(Crusher, 60, 1000, -300); placeStruct(1000, -300, 60, 40);
-                   placeTrap(Mine, 30, 1500, -10);
-                   placeTrap(WalkerTrap, 70, 2000, -70, 600);
-                   placeTrap(Emitter, 30, 3000, -40, isLR ? -1 : 1);
-               }
-           }
-       }
-
-       function checkTeamWipe() {
-           if (p1.dead && p2.dead) {
-               activeSeq = false;
-               activeDebuff = DEBUFFS[Math.floor(Math.random() * DEBUFFS.length)];
-               document.getElementById('debuff-display').innerText = `MODIFIER: ${activeDebuff.name}`;
-               
-               showDialog("DOUBLE KO", `Both grandchildren have perished.<br><br>Grandma applies: <strong style="color:var(--danger)">${activeDebuff.name}</strong>`, "TRY AGAIN", () => {
-                   hideDialog();
-                   respawnTeam(currentTier);
-               });
-           }
-       }
-
-       function reachCheckpoint(tier) {
-           if (tier > currentTier) {
-               currentTier = tier;
-               document.getElementById('progress-tracker').innerText = `TIER: ${currentTier + 1} / ${TOTAL_TIERS}`;
-               if (currentTier >= TOTAL_TIERS) {
-                   activeSeq = false;
-                   showDialog("YOU MADE IT", "You successfully navigated the hazards and reached Grandma.", "PLAY AGAIN", () => location.reload());
+               if (this.state === 'active') {
+                   ctx.fillStyle = "rgba(52, 152, 219, 0.7)";
+                   ctx.beginPath();
+                   ctx.ellipse(this.x + this.w/2, this.y + this.h/2, this.w/2, this.h/2, 0, 0, Math.PI*2);
+                   ctx.fill();
                } else {
-                   if (p1.dead) p1.spawnAt(mapData.checkpoints[currentTier]);
-                   if (p2.dead) p2.spawnAt(mapData.checkpoints[currentTier]);
+                   // Dripping faucet
+                   ctx.fillStyle = "#aaa";
+                   ctx.fillRect(this.x + this.w/2 - 5, this.y - 40, 10, 20);
                }
            }
        }
 
-       function respawnTeam(tier) {
-           projectiles = [];
-           mapData.traps.forEach(t => { if(t instanceof Mine) { t.timer = -1; t.exploded = false; } });
-           p1.spawnAt(mapData.checkpoints[tier]);
-           p2.spawnAt(mapData.checkpoints[tier]);
-           activeSeq = true;
-           lastTime = performance.now();
-           requestAnimationFrame(gameLoop);
+       let p1 = new Player(1, "var(--p1-color)", keys.p1);
+       let p2 = new Player(2, "var(--p2-color)", keys.p2);
+       
+       let traps = [];
+
+       function initTraps() {
+           traps = [
+               new FallingLamp(200, 100),             // Living room
+               new Toaster(750, 600),                 // Kitchen
+               new Roomba(600, 620),                  // Kitchen floor
+               new Cabinet(100, 150, 1),              // Bedroom
+               new Puddle(750, 290),                  // Bathroom sink
+               new FallingLamp(800, 50)               // Bathroom light
+           ];
        }
 
-       function showDialog(title, desc, btnText, action) {
-           const box = document.getElementById('msg-box');
-           document.getElementById('msg-title').innerHTML = title;
-           document.getElementById('msg-desc').innerHTML = desc;
-           const btn = document.getElementById('msg-btn');
-           btn.innerText = btnText;
-           btn.onclick = action;
-           box.style.display = 'block';
+       function runBotLogic(dt) {
+           traps.forEach(t => {
+               if (t.state === 'idle') {
+                   let dist = t.distToTarget();
+                   if (dist < 300 && Math.random() < 0.03) {
+                       t.trigger();
+                   }
+               }
+           });
        }
-       function hideDialog() { document.getElementById('msg-box').style.display = 'none'; }
+
+       // --- GAME FLOW ---
+       function setTask() {
+           currentTask = TASKS[Math.floor(Math.random() * TASKS.length)];
+           document.getElementById('task-display').innerText = `TASK: ${currentTask.text}`;
+       }
+
+       function startRound() {
+           setTask();
+           p1.reset();
+           p2.reset();
+           projectiles = [];
+           particles = [];
+           initTraps();
+           
+           gameState = 'COUNTDOWN';
+           roundTimer = 3.0;
+           document.getElementById('overlay-msg').style.display = 'block';
+           document.getElementById('msg-title').innerText = "GET READY";
+           document.getElementById('msg-title').style.color = "#FFC107";
+       }
+
+       function checkRoundEnd() {
+           if (p1.dead && p2.dead) {
+               endRound("NOBODY WINS", "Both players were eliminated!");
+           }
+       }
+
+       function winRound(playerId) {
+           if (playerId === 1) { scores.p1++; document.getElementById('score-p1').innerText = scores.p1; }
+           if (playerId === 2) { scores.p2++; document.getElementById('score-p2').innerText = scores.p2; }
+           
+           if (scores.p1 >= WIN_SCORE || scores.p2 >= WIN_SCORE) {
+               endGame(playerId);
+           } else {
+               endRound(`PLAYER ${playerId} WINS`, `Task Completed: ${currentTask.text}`);
+           }
+       }
+
+       function endRound(title, desc) {
+           gameState = 'ROUND_OVER';
+           roundTimer = 3.0;
+           const msg = document.getElementById('overlay-msg');
+           msg.style.display = 'block';
+           document.getElementById('msg-title').innerText = title;
+           document.getElementById('msg-title').style.color = (title.includes('1')) ? 'var(--p1-color)' : (title.includes('2')) ? 'var(--p2-color)' : '#fff';
+           document.getElementById('msg-desc').innerText = desc;
+       }
+
+       function endGame(winnerId) {
+           gameState = 'GAME_OVER';
+           const msg = document.getElementById('overlay-msg');
+           msg.style.display = 'block';
+           document.getElementById('msg-title').innerText = `PLAYER ${winnerId} WINS THE GAME!`;
+           document.getElementById('msg-title').style.color = winnerId === 1 ? 'var(--p1-color)' : 'var(--p2-color)';
+           document.getElementById('msg-desc').innerText = "Refresh to play again.";
+       }
 
        function gameLoop(time) {
-           if (!activeSeq) return;
            let dt = (time - lastTime) / 1000;
            lastTime = time;
-           if (dt > 0.1) dt = 0.1; 
+           if (dt > 0.1) dt = 0.1;
 
-           // Update
-           p1.update(dt, p2);
-           p2.update(dt, p1);
-           
-           mapData.traps.forEach(t => t.update(dt));
-           
+           if (gameState === 'COUNTDOWN') {
+               roundTimer -= dt;
+               document.getElementById('msg-desc').innerText = Math.ceil(roundTimer);
+               if (roundTimer <= 0) {
+                   gameState = 'PLAYING';
+                   document.getElementById('overlay-msg').style.display = 'none';
+               }
+           } else if (gameState === 'ROUND_OVER') {
+               roundTimer -= dt;
+               if (roundTimer <= 0) startRound();
+           }
+
+           if (gameState === 'PLAYING') {
+               p1.update(dt, p2);
+               p2.update(dt, p1);
+               runBotLogic(dt);
+           }
+
+           traps.forEach(t => t.update(dt));
+
            for(let i=projectiles.length-1; i>=0; i--) {
                let p = projectiles[i];
                p.x += p.vx * dt;
-               let hitWall = mapData.structures.some(s => p.x < s.x+s.w && p.x+p.w > s.x && p.y < s.y+s.h && p.y+p.h > s.y);
-               if (hitWall) projectiles.splice(i,1);
+               p.y += p.vy * dt;
+               p.vy += 1200 * dt; // gravity for toast/projectiles
+               
+               let hitWall = structures.some(s => p.x < s.x+s.w && p.x+p.w > s.x && p.y < s.y+s.h && p.y+p.h > s.y);
+               if (hitWall || p.y > 700) projectiles.splice(i,1);
            }
 
            for(let i=particles.length-1; i>=0; i--) {
@@ -600,77 +637,73 @@
                if (particles[i].life <= 0) particles.splice(i,1);
            }
 
-           // Camera Tracking
-           let tx = 0, ty = 0, count = 0;
-           if (!p1.dead) { tx += p1.x; ty += p1.y; count++; }
-           if (!p2.dead) { tx += p2.x; ty += p2.y; count++; }
-           if (count > 0) {
-               tx /= count; ty /= count;
-               camera.x += (tx - cvs.width/2 - camera.x) * 5 * dt;
-               camera.y += (ty - cvs.height/2 - camera.y) * 5 * dt;
-           }
-           
-           if (camera.x < -100) camera.x = -100;
-           if (camera.x > MAP_WIDTH - cvs.width + 100) camera.x = MAP_WIDTH - cvs.width + 100;
+           if (screenShake > 0) screenShake -= 40 * dt;
 
-           if (screenShake > 0) {
-               camera.x += (Math.random()-0.5)*screenShake;
-               camera.y += (Math.random()-0.5)*screenShake;
-               screenShake -= 40 * dt;
-           }
-
-           // --- DRAW ---
-           ctx.fillStyle = "#e0e0e0"; // Light clean background
+           // --- DRAWING ---
+           ctx.fillStyle = "#111"; // Default bg
            ctx.fillRect(0, 0, cvs.width, cvs.height);
 
            ctx.save();
-           ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
-
-           // Grid background
-           ctx.strokeStyle = "#ccc";
-           ctx.lineWidth = 1;
-           ctx.beginPath();
-           let startX = Math.floor(camera.x / 100) * 100;
-           let startY = Math.floor(camera.y / 100) * 100;
-           for(let x = startX; x < camera.x + cvs.width; x += 100) { ctx.moveTo(x, camera.y); ctx.lineTo(x, camera.y+cvs.height); }
-           for(let y = startY; y < camera.y + cvs.height; y += 100) { ctx.moveTo(camera.x, y); ctx.lineTo(camera.x+cvs.width, y); }
-           ctx.stroke();
-
-           // Tier markers
-           ctx.fillStyle = "rgba(0,0,0,0.1)";
-           ctx.font = "bold 120px Arial";
-           for(let i=0; i<TOTAL_TIERS; i++) {
-               ctx.fillText(`FLOOR ${i+1}`, MAP_WIDTH/2 - 200, i*TIER_HEIGHT + TIER_HEIGHT/2);
+           if (screenShake > 0) {
+               ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake);
            }
 
-           // Goals & Grandma
-           for(let g of mapData.goals) {
-               if (g.tier === TOTAL_TIERS - 1) {
-                   if (imgGrandma.complete && imgGrandma.naturalHeight !== 0) {
-                       ctx.drawImage(imgGrandma, g.x, g.y, g.w, g.h);
-                   } else {
-                       ctx.fillStyle = "pink"; ctx.fillRect(g.x, g.y, g.w, g.h);
-                       ctx.fillStyle = "black"; ctx.font="20px Arial"; ctx.fillText("GRANDMA", g.x, g.y+50);
-                   }
-               } else {
-                   ctx.fillStyle = "rgba(40, 167, 69, 0.4)"; // Safe zone green
-                   ctx.fillRect(g.x, g.y, g.w, g.h);
-               }
+           // Draw Rooms (Backgrounds)
+           rooms.forEach(r => {
+               ctx.fillStyle = r.color;
+               ctx.fillRect(r.x, r.y, r.w, r.h);
+               // Room Name
+               ctx.fillStyle = "rgba(0,0,0,0.1)";
+               ctx.font = "bold 40px sans-serif";
+               ctx.fillText(r.name.toUpperCase(), r.x + 20, r.y + 60);
+           });
+
+           // Target Highlight
+           if (currentTask && gameState === 'PLAYING') {
+               let tgt = currentTask.target;
+               ctx.fillStyle = `rgba(46, 204, 113, ${0.3 + Math.sin(time/200)*0.1})`; // pulsing green
+               ctx.fillRect(tgt.x, tgt.y, tgt.w, tgt.h);
+               ctx.strokeStyle = "#2ECC71";
+               ctx.lineWidth = 4;
+               ctx.strokeRect(tgt.x, tgt.y, tgt.w, tgt.h);
+               
+               ctx.font = "30px sans-serif";
+               ctx.fillText(currentTask.icon, tgt.x + tgt.w/2 - 15, tgt.y - 10 + Math.sin(time/150)*5);
            }
+
+           // Decor / Objects
+           // Fridge
+           ctx.fillStyle = "#ecf0f1"; ctx.fillRect(880, 510, 80, 130);
+           ctx.fillStyle = "#bdc3c7"; ctx.fillRect(890, 510, 2, 130); // split
+           // Couch
+           ctx.fillStyle = "#8e44ad"; ctx.fillRect(50, 600, 120, 40); ctx.fillRect(50, 570, 20, 70); ctx.fillRect(150, 570, 20, 70);
+           // TV
+           ctx.fillStyle = "#2c3e50"; ctx.fillRect(250, 550, 80, 50); ctx.fillStyle = "#3498db"; ctx.fillRect(255, 555, 70, 40);
+           // Bed
+           ctx.fillStyle = "#8b4513"; ctx.fillRect(50, 280, 120, 20); ctx.fillStyle = "#3498db"; ctx.fillRect(50, 260, 90, 20); ctx.fillStyle = "#fff"; ctx.fillRect(140, 260, 30, 20);
+           // Toilet/Sink
+           ctx.fillStyle = "#fff"; ctx.fillRect(850, 250, 30, 50); ctx.fillRect(850, 230, 15, 20); // toilet
+           ctx.fillRect(750, 260, 40, 40); // sink base
 
            // Structures
-           for(let s of mapData.structures) {
-               ctx.fillStyle = "#222";
+           structures.forEach(s => {
+               ctx.fillStyle = s.type === 'plat' ? "#555" : "#333";
                ctx.fillRect(s.x, s.y, s.w, s.h);
-               ctx.fillStyle = "#555";
-               ctx.fillRect(s.x, s.y, s.w, 4); // Top edge
-           }
+               if (s.type === 'floor') {
+                   ctx.fillStyle = "#4a3f35"; // wood color
+                   ctx.fillRect(s.x, s.y, s.w, 10);
+               } else if (s.type === 'plat') {
+                   ctx.fillStyle = "#777";
+                   ctx.fillRect(s.x, s.y, s.w, 4);
+               }
+           });
 
-           mapData.traps.forEach(t => t.draw());
+           // Entities
+           traps.forEach(t => t.draw());
            
-           ctx.fillStyle = "#FFC107";
            projectiles.forEach(p => {
-               ctx.beginPath(); ctx.arc(p.x+6, p.y+6, 6, 0, Math.PI*2); ctx.fill();
+               ctx.fillStyle = p.color;
+               ctx.fillRect(p.x, p.y, p.w, p.h);
            });
 
            p1.draw();
@@ -679,18 +712,15 @@
 
            ctx.restore();
 
-           if (activeSeq) requestAnimationFrame(gameLoop);
+           requestAnimationFrame(gameLoop);
        }
 
        decoy.addEventListener('dblclick', () => {
            decoy.style.display = 'none';
            wrapper.style.display = 'block';
-           buildMap();
-           
-           showDialog("VISIT GRANDMA", "Navigate through 8 unique floors to reach Grandma's living room.<br><br>Beware of her <b>rogue Walkers</b>, Crushers, and Landmines.<br><br><i>Pro Tip:</i> Press <b>SPACE</b> or <b>SHIFT</b> to shove the other player into traps.", "ENTER HOUSE", () => {
-               hideDialog();
-               respawnTeam(0);
-           });
+           lastTime = performance.now();
+           startRound();
+           requestAnimationFrame(gameLoop);
        });
    </script>
 </body>
