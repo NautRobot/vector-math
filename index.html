@@ -3,14 +3,16 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Zouse of Zazards: Co-Op Protocol</title>
+   <title>Zouse of Zazards: Sibling Sabotage</title>
    <style>
        :root {
-           --bg-color: #0b0c10;
-           --text-color: #66fcf1;
+           --bg-color: #222;
+           --text-color: #eee;
+           --highlight: #007BFF;
+           --danger: #DC3545;
        }
        body {
-           font-family: "Courier New", Courier, monospace;
+           font-family: Arial, sans-serif;
            background-color: var(--bg-color);
            color: var(--text-color);
            margin: 0;
@@ -23,21 +25,24 @@
        }
        #decoy-container {
            text-align: center;
-           border: 2px solid #45a29e;
+           border: 2px solid #555;
            padding: 40px;
-           background: #1f2833;
-           box-shadow: 8px 8px 0px #000;
+           background: #333;
+           box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
            cursor: pointer;
+           border-radius: 8px;
        }
-       #decoy-container h1 { margin-top: 0; color: #ff007f; }
+       #decoy-container h1 { margin-top: 0; color: #fff; }
        #sim-wrapper {
            display: none;
            position: relative;
-           width: 900px;
-           height: 600px;
-           background-color: #111;
-           box-shadow: 10px 10px 0px rgba(0,0,0,1);
-           border: 4px solid #45a29e;
+           width: 1000px;
+           height: 650px;
+           background-color: #e0e0e0;
+           box-shadow: 0px 10px 30px rgba(0,0,0,0.8);
+           border: 4px solid #444;
+           border-radius: 8px;
+           overflow: hidden;
        }
        canvas {
            display: block;
@@ -52,74 +57,67 @@
            flex-direction: column;
            justify-content: space-between;
        }
-       .hud-bar {
+       .hud-bar, .hud-footer {
            display: flex;
            justify-content: space-between;
            padding: 10px 20px;
-           background: rgba(11, 12, 16, 0.85);
-           border-bottom: 2px solid #45a29e;
+           background: rgba(34, 34, 34, 0.9);
            font-weight: bold;
-           font-size: 16px;
-       }
-       .hud-footer {
-           padding: 10px 20px;
-           background: rgba(11, 12, 16, 0.85);
-           border-top: 2px solid #45a29e;
-           display: flex;
-           justify-content: space-between;
            font-size: 14px;
+           border-bottom: 2px solid #444;
        }
+       .hud-footer { border-bottom: none; border-top: 2px solid #444; }
        .message-box {
            position: absolute;
            top: 50%; left: 50%;
            transform: translate(-50%, -50%);
-           background: #1f2833;
-           border: 4px solid #ff007f;
-           padding: 20px;
+           background: #fff;
+           color: #222;
+           border: 4px solid #444;
+           border-radius: 8px;
+           padding: 30px;
            text-align: center;
-           box-shadow: 10px 10px 0px rgba(0,0,0,0.8);
+           box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
            display: none;
        }
        .btn {
-           background: #45a29e;
-           color: #0b0c10;
+           background: var(--highlight);
+           color: #fff;
            border: none;
-           padding: 10px 20px;
+           border-radius: 4px;
+           padding: 12px 24px;
            font-size: 16px;
-           font-family: inherit;
            font-weight: bold;
            cursor: pointer;
            pointer-events: auto;
            margin-top: 15px;
        }
-       .btn:hover { background: #66fcf1; }
-       
-       .bot-indicator { display: inline-block; width: 10px; height: 10px; margin-right: 5px; }
+       .btn:hover { background: #0056b3; }
+       .player-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; color: white; }
    </style>
 </head>
 <body>
    <div id="decoy-container">
-       <h1>SYSTEM OF HAZARDS</h1>
-       <p>CO-OP TRAINING PROTOCOL</p>
-       <p style="margin-top:30px; font-size: 0.9em; color:#c5c6c7;">[ DOUBLE CLICK TO INITIALIZE ]</p>
+       <h1>Grandma's House Rules</h1>
+       <p>A Co-Op Platforming Experience (With Sabotage)</p>
+       <p style="margin-top:30px; font-size: 0.9em; color:#aaa;">[ DOUBLE CLICK TO START ]</p>
    </div>
 
    <div id="sim-wrapper">
-       <canvas id="sim-canvas" width="900" height="600"></canvas>
+       <canvas id="sim-canvas" width="1000" height="650"></canvas>
        <div id="ui-layer">
            <div class="hud-bar">
-               <div style="color: #66fcf1;">P1: W,A,S,D</div>
-               <div id="debuff-display" style="color: #ffcc00; text-transform: uppercase;">DEBUFF: NONE</div>
-               <div style="color: #ff007f;">P2: ARROWS</div>
+               <div><span class="player-tag" style="background: #007BFF">P1</span> W,A,S,D + <b>SPACE (Shove)</b></div>
+               <div id="debuff-display" style="color: #DC3545; text-transform: uppercase;">MODIFIER: NONE</div>
+               <div><span class="player-tag" style="background: #DC3545">P2</span> ARROWS + <b>SHIFT (Shove)</b></div>
            </div>
            <div class="message-box" id="msg-box">
-               <h2 id="msg-title" style="margin:0 0 10px 0; color: white;"></h2>
-               <p id="msg-desc" style="margin:0 0 15px 0;"></p>
+               <h2 id="msg-title" style="margin:0 0 10px 0;"></h2>
+               <p id="msg-desc" style="margin:0 0 15px 0; color:#555;"></p>
                <button class="btn" id="msg-btn">CONTINUE</button>
            </div>
            <div class="hud-footer">
-               <div id="bot-roster"></div>
-               <div id="progress-tracker">GOAL: 0 / 8</div>
+               <div id="progress-tracker">TIER: 1 / 8</div>
            </div>
        </div>
    </div>
@@ -129,6 +127,13 @@
        const wrapper = document.getElementById('sim-wrapper');
        const cvs = document.getElementById('sim-canvas');
        const ctx = cvs.getContext('2d');
+
+       // External Images
+       const imgGrandma = new Image();
+       imgGrandma.src = "https://images.unsplash.com/photo-1531686264889-56fdcabd163f?w=150&h=150&fit=crop"; 
+       
+       const imgWalker = new Image();
+       imgWalker.src = "https://plus.unsplash.com/premium_photo-1663089688180-444ff0066e5d?w=100&h=100&fit=crop"; 
 
        // Game Globals
        let activeSeq = false;
@@ -141,57 +146,44 @@
        let activeDebuff = null;
        
        const TIER_HEIGHT = 450;
-       const MAP_WIDTH = 3500;
+       const MAP_WIDTH = 4000;
        const TOTAL_TIERS = 8;
 
        const DEBUFFS = [
-           { name: "ICE FLOOR", effect: (p) => p.friction = 0.99, color: "#aaddff" },
-           { name: "HEAVY GRAVITY", effect: (p) => { p.grav = 1800; p.jumpForce = 550; }, color: "#ff5555" },
-           { name: "MOON JUMP", effect: (p) => { p.grav = 600; p.jumpForce = 450; }, color: "#aaaaff" },
-           { name: "SLUGGISH", effect: (p) => p.accel = 800, color: "#88cc88" },
-           { name: "INVERTED X", effect: (p) => p.invertedX = true, color: "#ff88ff" },
-           { name: "DARKNESS", effect: (p) => {}, isGlobal: true, color: "#111111" }
+           { name: "ICE FLOOR", effect: (p) => p.friction = 0.99 },
+           { name: "HEAVY GRAVITY", effect: (p) => { p.grav = 2000; p.jumpForce = 600; } },
+           { name: "MOON JUMP", effect: (p) => { p.grav = 700; p.jumpForce = 500; } },
+           { name: "SLUGGISH", effect: (p) => p.accel = 1000 }
        ];
 
-       // Bots representing trap logic
-       const BOTS = [
-           { id: 0, name: "Bot A", color: "#ff3333", aggression: 0.02 },
-           { id: 1, name: "Bot B", color: "#ff9933", aggression: 0.03 },
-           { id: 2, name: "Bot C", color: "#ffff33", aggression: 0.02 },
-           { id: 3, name: "Bot D", color: "#33ff33", aggression: 0.04 },
-           { id: 4, name: "Bot E", color: "#33ffff", aggression: 0.02 },
-           { id: 5, name: "Bot F", color: "#3333ff", aggression: 0.05 },
-           { id: 6, name: "Bot G", color: "#9933ff", aggression: 0.03 },
-           { id: 7, name: "Bot H", color: "#ff33ff", aggression: 0.04 }
-       ];
-
-       let mapData = {
-           structures: [],
-           traps: [],
-           checkpoints: [],
-           goals: []
-       };
+       let mapData = { structures: [], traps: [], checkpoints: [], goals: [] };
 
        const keys = {
-           p1: { left: false, right: false, up: false },
-           p2: { left: false, right: false, up: false }
+           p1: { left: false, right: false, up: false, action: false },
+           p2: { left: false, right: false, up: false, action: false }
        };
 
        window.addEventListener('keydown', e => {
            if (e.code === 'KeyA') keys.p1.left = true;
            if (e.code === 'KeyD') keys.p1.right = true;
            if (e.code === 'KeyW') keys.p1.up = true;
+           if (e.code === 'Space') keys.p1.action = true;
+           
            if (e.code === 'ArrowLeft') keys.p2.left = true;
            if (e.code === 'ArrowRight') keys.p2.right = true;
            if (e.code === 'ArrowUp') keys.p2.up = true;
+           if (e.code === 'ShiftRight' || e.code === 'ShiftLeft') keys.p2.action = true;
        });
        window.addEventListener('keyup', e => {
            if (e.code === 'KeyA') keys.p1.left = false;
            if (e.code === 'KeyD') keys.p1.right = false;
            if (e.code === 'KeyW') keys.p1.up = false;
+           if (e.code === 'Space') keys.p1.action = false;
+           
            if (e.code === 'ArrowLeft') keys.p2.left = false;
            if (e.code === 'ArrowRight') keys.p2.right = false;
            if (e.code === 'ArrowUp') keys.p2.up = false;
+           if (e.code === 'ShiftRight' || e.code === 'ShiftLeft') keys.p2.action = false;
        });
 
        class Player {
@@ -199,48 +191,57 @@
                this.id = id;
                this.color = color;
                this.inputs = inputs;
-               this.w = 24; this.h = 24;
+               this.w = 30; this.h = 30;
                this.dead = false;
+               this.pushCooldown = 0;
                this.resetPhysics();
            }
            resetPhysics() {
                this.vx = 0; this.vy = 0;
                this.grounded = false;
-               this.accel = 2000;
-               this.friction = 0.8;
-               this.grav = 1200;
-               this.jumpForce = 700;
-               this.invertedX = false;
+               this.accel = 2500;
+               this.friction = 0.82;
+               this.grav = 1400;
+               this.jumpForce = 750;
            }
            applyDebuff() {
                this.resetPhysics();
-               if (activeDebuff && !activeDebuff.isGlobal) {
-                   activeDebuff.effect(this);
-               }
+               if (activeDebuff) activeDebuff.effect(this);
            }
            spawnAt(cp) {
                this.x = cp.x;
                this.y = cp.y;
                this.dead = false;
+               this.pushCooldown = 0;
                this.applyDebuff();
            }
            die() {
                if(this.dead) return;
                this.dead = true;
                screenShake = 15;
-               for(let i=0; i<20; i++) {
-                   particles.push(new Particle(this.x + this.w/2, this.y + this.h/2, this.color));
-               }
+               for(let i=0; i<25; i++) particles.push(new Particle(this.x + this.w/2, this.y + this.h/2, this.color));
                checkTeamWipe();
            }
-           update(dt) {
+           update(dt, other) {
                if (this.dead) return;
+               if (this.pushCooldown > 0) this.pushCooldown -= dt;
 
-               let left = this.invertedX ? this.inputs.right : this.inputs.left;
-               let right = this.invertedX ? this.inputs.left : this.inputs.right;
+               // Sabotage Mechanics (Shove)
+               if (this.inputs.action && this.pushCooldown <= 0 && !other.dead) {
+                   let dx = other.x - this.x;
+                   let dy = other.y - this.y;
+                   if (Math.hypot(dx, dy) < 60) {
+                       let dir = (dx > 0) ? 1 : -1;
+                       other.vx = dir * 2000; 
+                       other.vy = -500;
+                       this.pushCooldown = 1.0;
+                       screenShake = 8;
+                       for(let i=0; i<10; i++) particles.push(new Particle(this.x+this.w/2, this.y+this.h/2, "#fff"));
+                   }
+               }
 
-               if (left) this.vx -= this.accel * dt;
-               if (right) this.vx += this.accel * dt;
+               if (this.inputs.left) this.vx -= this.accel * dt;
+               if (this.inputs.right) this.vx += this.accel * dt;
                
                this.vx *= this.friction;
                this.vy += this.grav * dt;
@@ -248,7 +249,6 @@
                if (this.inputs.up && this.grounded) {
                    this.vy = -this.jumpForce;
                    this.grounded = false;
-                   for(let i=0; i<5; i++) particles.push(new Particle(this.x+this.w/2, this.y+this.h, "#fff", true));
                }
 
                this.x += this.vx * dt;
@@ -272,7 +272,6 @@
                    }
                }
 
-               // Bounds
                if (this.y > (TOTAL_TIERS+1)*TIER_HEIGHT) this.die();
            }
            resolveMapCollision(axis) {
@@ -298,181 +297,233 @@
                if(this.dead) return;
                ctx.fillStyle = this.color;
                ctx.fillRect(this.x, this.y, this.w, this.h);
-               ctx.fillStyle = "#000";
-               ctx.fillRect(this.x+4, this.y+4, this.w-8, this.h-8);
-               ctx.fillStyle = this.color;
-               ctx.fillRect(this.x+8, this.y+8, this.w-16, this.h-16);
+               // Draw cooldown indicator
+               if(this.pushCooldown > 0) {
+                   ctx.fillStyle = "rgba(255,255,255,0.5)";
+                   ctx.fillRect(this.x, this.y + this.h - 5, this.w * (1 - this.pushCooldown), 5);
+               }
            }
        }
 
        class Particle {
-           constructor(x, y, color, isDust=false) {
+           constructor(x, y, color) {
                this.x = x; this.y = y;
                this.color = color;
-               this.size = Math.random() * 6 + 2;
+               this.size = Math.random() * 6 + 4;
                this.life = 1.0;
-               this.decay = Math.random() * 1.5 + 0.5;
                let angle = Math.random() * Math.PI * 2;
-               let speed = isDust ? Math.random() * 50 + 20 : Math.random() * 300 + 50;
+               let speed = Math.random() * 300 + 100;
                this.vx = Math.cos(angle) * speed;
                this.vy = Math.sin(angle) * speed;
-               if(isDust) { this.vy = -Math.abs(this.vy); this.size = 4; }
            }
            update(dt) {
                this.x += this.vx * dt;
                this.y += this.vy * dt;
-               this.life -= this.decay * dt;
+               this.life -= dt * 1.5;
            }
            draw() {
                if(this.life <= 0) return;
+               ctx.globalAlpha = this.life;
                ctx.fillStyle = this.color;
                ctx.fillRect(this.x, this.y, this.size, this.size);
+               ctx.globalAlpha = 1.0;
            }
        }
 
+       // --- TRAPS ---
        class Trap {
-           constructor(x, y, botId) {
-               this.x = x; this.y = y;
-               this.botId = botId;
-               this.active = false;
-           }
-           trigger() { this.active = true; }
-           update(dt) {}
-           draw() {}
-           checkHit(p) { return false; }
-           distToPlayers() {
-               let d = 99999;
-               if(!p1.dead) d = Math.min(d, Math.hypot(p1.x - this.x, p1.y - this.y));
-               if(!p2.dead) d = Math.min(d, Math.hypot(p2.x - this.x, p2.y - this.y));
-               return d;
-           }
+           constructor(x, y) { this.x = x; this.y = y; this.active = true; }
+           update(dt) {} draw() {} checkHit(p) { return false; }
        }
 
        class Spike extends Trap {
-           constructor(x, y) { super(x, y, -1); this.w = 30; this.h = 30; this.active=true; }
-           checkHit(p) { return (p.x < this.x+this.w-5 && p.x+p.w > this.x+5 && p.y+p.h > this.y+10 && p.y < this.y+this.h); }
+           constructor(x, y) { super(x, y); this.w = 40; this.h = 20; }
+           checkHit(p) { return (p.x < this.x+this.w-5 && p.x+p.w > this.x+5 && p.y+p.h > this.y && p.y < this.y+this.h); }
            draw() {
-               ctx.fillStyle = "#ff2a2a";
+               ctx.fillStyle = "#DC3545";
                ctx.beginPath();
-               ctx.moveTo(this.x + this.w/2, this.y);
+               ctx.moveTo(this.x + this.w/2, this.y - 10);
                ctx.lineTo(this.x + this.w, this.y + this.h);
                ctx.lineTo(this.x, this.y + this.h);
                ctx.fill();
            }
        }
 
-       class Piston extends Trap {
-           constructor(x, y, botId) { super(x, y, botId); this.w = 40; this.h = 40; this.baseY = y; this.timer = 0; }
-           trigger() { if(!this.active) { this.active = true; this.timer = 0; } }
+       class Mine extends Trap {
+           constructor(x, y) { super(x, y); this.w = 30; this.h = 10; this.timer = -1; this.exploded = false; }
            update(dt) {
-               if(!this.active) return;
-               this.timer += dt;
-               if(this.timer < 0.15) this.h += 1500 * dt; // Smash down
-               else if(this.timer < 0.3) {} // Hold
-               else if(this.timer < 1.0) this.h -= 300 * dt; // Retract
-               else { this.active = false; this.h = 40; }
+               if (this.timer > 0) {
+                   this.timer -= dt;
+                   if (this.timer <= 0) this.explode();
+               }
            }
-           checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y < this.y+this.h && p.y+p.h > this.y); }
+           explode() {
+               this.timer = 0; this.exploded = true; screenShake = 20;
+               [p1, p2].forEach(p => { if (!p.dead && Math.hypot(p.x - this.x, p.y - this.y) < 120) p.die(); });
+               for(let i=0; i<30; i++) particles.push(new Particle(this.x, this.y, "#FFC107"));
+           }
+           checkHit(p) {
+               if (this.exploded) return false;
+               let hit = (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h);
+               if (hit && this.timer === -1) this.timer = 0.5; // arm mine
+               return false;
+           }
            draw() {
-               ctx.fillStyle = "#45a29e";
-               ctx.fillRect(this.x+5, this.baseY, this.w-10, this.h); // Shaft
-               ctx.fillStyle = this.active ? "#ff2a2a" : "#ff9933";
-               ctx.fillRect(this.x, this.baseY + this.h - 20, this.w, 20); // Head
+               if (this.exploded) return;
+               ctx.fillStyle = (this.timer > 0 && Math.floor(this.timer*15)%2===0) ? "#DC3545" : "#444";
+               ctx.beginPath(); ctx.arc(this.x+15, this.y+10, 15, Math.PI, 0); ctx.fill();
            }
        }
 
-       class Laser extends Trap {
-           constructor(x, y, botId, h) { super(x, y, botId); this.w = 10; this.maxH = h; this.h = 0; this.timer = 0; }
-           trigger() { if(!this.active) { this.active = true; this.timer = 0; } }
+       class Crusher extends Trap {
+           constructor(x, y) { super(x, y); this.w = 60; this.h = 200; this.baseY = y; this.timer = Math.random() * 2; }
            update(dt) {
-               if(!this.active) return;
                this.timer += dt;
-               if(this.timer < 0.5) this.h = this.maxH; // Warning phase? No, just instant.
-               else if(this.timer < 2.0) this.h = this.maxH;
-               else { this.active = false; this.h = 0; }
+               let cycle = this.timer % 3;
+               if (cycle < 0.2) this.y = this.baseY + (cycle/0.2)*200; // Drop
+               else if (cycle < 1.0) this.y = this.baseY + 200; // Hold
+               else this.y = this.baseY + 200 - ((cycle-1.0)/2.0)*200; // Rise
            }
-           checkHit(p) { return this.active && this.timer > 0.5 && (p.x < this.x+this.w && p.x+p.w > this.x && p.y < this.y+this.h && p.y+p.h > this.y); }
+           checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h); }
            draw() {
-               ctx.fillStyle = "#ff2a2a";
-               ctx.fillRect(this.x-5, this.y, 20, 10);
-               if(this.active) {
-                   ctx.fillStyle = this.timer < 0.5 ? "#550000" : "#ff2a2a"; // Solid warning color then bright
-                   ctx.fillRect(this.x, this.y+10, this.w, this.h);
+               ctx.fillStyle = "#888"; ctx.fillRect(this.x, this.baseY, this.w, this.y - this.baseY);
+               ctx.fillStyle = "#333"; ctx.fillRect(this.x, this.y, this.w, 40);
+               ctx.fillStyle = "#FFC107"; ctx.fillRect(this.x, this.y + 35, this.w, 5); // Warning stripe
+           }
+       }
+
+       class WalkerTrap extends Trap {
+           constructor(x, y, range) {
+               super(x, y);
+               this.w = 70; this.h = 70;
+               this.startX = x; this.maxX = x + range;
+               this.vx = 250;
+           }
+           update(dt) {
+               this.x += this.vx * dt;
+               if (this.x > this.maxX) { this.x = this.maxX; this.vx *= -1; }
+               if (this.x < this.startX) { this.x = this.startX; this.vx *= -1; }
+           }
+           checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y+p.h > this.y && p.y < this.y+this.h); }
+           draw() {
+               if (imgWalker.complete && imgWalker.naturalHeight !== 0) {
+                   ctx.drawImage(imgWalker, this.x, this.y, this.w, this.h);
+               } else {
+                   ctx.fillStyle = "#666"; ctx.fillRect(this.x, this.y, this.w, this.h);
+                   ctx.fillStyle = "#fff"; ctx.fillText("WALKER", this.x+5, this.y+35);
                }
            }
        }
 
        class Emitter extends Trap {
-           constructor(x, y, botId, dir) { super(x, y, botId); this.w = 30; this.h = 30; this.dir = dir; this.cd = 0; }
-           trigger() { if(this.cd <= 0) { this.active = true; this.cd = 2.0; } }
+           constructor(x, y, dir) { super(x, y); this.w = 30; this.h = 30; this.dir = dir; this.cd = Math.random(); }
            update(dt) {
-               if(this.cd > 0) this.cd -= dt;
-               if(this.active) {
-                   projectiles.push({x: this.x+15, y: this.y+10, w:10, h:10, vx: this.dir * 400});
-                   this.active = false;
+               this.cd -= dt;
+               if(this.cd <= 0) {
+                   projectiles.push({x: this.x+10, y: this.y+10, w:12, h:12, vx: this.dir * 450});
+                   this.cd = 1.5;
                }
            }
            draw() {
-               ctx.fillStyle = this.cd > 0 ? "#555" : "#ff9933";
-               ctx.fillRect(this.x, this.y, this.w, this.h);
-               ctx.fillStyle = "#000";
-               ctx.fillRect(this.dir===1 ? this.x+20 : this.x, this.y+10, 10, 10);
+               ctx.fillStyle = "#333"; ctx.fillRect(this.x, this.y, this.w, this.h);
+               ctx.fillStyle = "#DC3545"; ctx.fillRect(this.dir===1 ? this.x+20 : this.x, this.y+10, 10, 10);
            }
        }
 
-       let p1 = new Player(1, "#66fcf1", keys.p1);
-       let p2 = new Player(2, "#ff007f", keys.p2);
+       let p1 = new Player(1, "#007BFF", keys.p1);
+       let p2 = new Player(2, "#DC3545", keys.p2);
 
+       // --- MAP GENERATION ---
        function buildMap() {
            mapData = { structures: [], traps: [], checkpoints: [], goals: [] };
            
-           // Outer bounds
            mapData.structures.push({x: -100, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
            mapData.structures.push({x: MAP_WIDTH, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
 
            for(let i=0; i<TOTAL_TIERS; i++) {
                let y = i * TIER_HEIGHT;
-               let right = (i%2 === 0);
                let floorY = y + TIER_HEIGHT - 40;
+               let isLR = (i % 2 === 0);
 
-               // Checkpoint
-               let cpX = right ? 100 : MAP_WIDTH - 150;
+               // Helper to mirror level design automatically left-to-right vs right-to-left
+               const placeStruct = (xOff, yOff, w, h) => {
+                   let actualX = isLR ? xOff : MAP_WIDTH - xOff - w;
+                   mapData.structures.push({x: actualX, y: floorY + yOff, w, h});
+               };
+               const placeTrap = (TrapClass, w, xOff, yOff, ...args) => {
+                   let actualX = isLR ? xOff : MAP_WIDTH - xOff - w;
+                   mapData.traps.push(new TrapClass(actualX, floorY + yOff, ...args));
+               };
+
+               // Checkpoint and Goal
+               let cpX = isLR ? 150 : MAP_WIDTH - 200;
                mapData.checkpoints.push({x: cpX, y: floorY - 60});
+               let goalX = isLR ? MAP_WIDTH - 200 : 100;
+               mapData.goals.push({x: goalX, y: floorY - 120, w: 100, h: 120, tier: i});
 
-               // Goal Area
-               let goalX = right ? MAP_WIDTH - 150 : 50;
-               mapData.goals.push({x: goalX, y: floorY - 100, w: 100, h: 100, tier: i});
-
-               // Floor Chunk
-               let fW = MAP_WIDTH - 200;
-               let fX = right ? 0 : 200;
-               mapData.structures.push({x: fX, y: floorY, w: fW, h: 40});
-
-               // Generate Obstacles & Traps
-               let cursor = right ? 400 : MAP_WIDTH - 400;
-               let step = right ? 1 : -1;
-               let end = right ? MAP_WIDTH - 400 : 400;
-
-               while((right && cursor < end) || (!right && cursor > end)) {
-                   let r = Math.random();
-                   let botId = Math.floor(Math.random() * 8);
-                   
-                   if (r < 0.25) { // Wall Hurdle
-                       mapData.structures.push({x: cursor, y: floorY - 80, w: 30, h: 80});
-                       mapData.traps.push(new Spike(cursor + 30 * step, floorY - 30));
-                   } else if (r < 0.5) { // Piston
-                       mapData.traps.push(new Piston(cursor, y + 40, botId));
-                       mapData.structures.push({x: cursor-10, y: y, w: 60, h: 40}); // Ceiling anchor
-                   } else if (r < 0.75) { // Laser
-                       mapData.traps.push(new Laser(cursor, y + 40, botId, TIER_HEIGHT - 80));
-                   } else { // Emitter
-                       mapData.traps.push(new Emitter(cursor, floorY - 40, botId, step * -1)); // Shoots towards incoming player
+               // Unique Tier Designs
+               if (i === 0) {
+                   // TIER 1: Intro. Basic jumps.
+                   placeStruct(0, 0, 800, 40);
+                   placeStruct(1000, 0, 800, 40); placeTrap(Spike, 40, 1300, -20);
+                   placeStruct(2000, 0, MAP_WIDTH - 2000, 40);
+               } 
+               else if (i === 1) {
+                   // TIER 2: Crushers
+                   placeStruct(0, 0, MAP_WIDTH, 40);
+                   for(let d = 600; d < 3500; d += 600) {
+                       placeTrap(Crusher, 60, d, -300);
+                       placeStruct(d, -300, 60, 40); // ceiling anchor
                    }
-                   
-                   // Minor aesthetic pillars
-                   mapData.structures.push({x: cursor + 150*step, y: floorY, w: 40, h: Math.random()*20+10});
-                   
-                   cursor += step * (Math.random() * 200 + 300);
+               } 
+               else if (i === 2) {
+                   // TIER 3: The Hospital Hallway (Walkers)
+                   placeStruct(0, 0, MAP_WIDTH, 40);
+                   placeTrap(WalkerTrap, 70, 700, -70, 400);
+                   placeTrap(WalkerTrap, 70, 1500, -70, 500);
+                   placeTrap(WalkerTrap, 70, 2400, -70, 600);
+               } 
+               else if (i === 3) {
+                   // TIER 4: Minefield & Emitters
+                   placeStruct(0, 0, 500, 40);
+                   placeStruct(700, 0, 1200, 40);
+                   placeTrap(Mine, 30, 900, -10); placeTrap(Mine, 30, 1200, -10); placeTrap(Mine, 30, 1500, -10);
+                   placeStruct(2100, -100, 300, 40); placeTrap(Emitter, 30, 2250, -130, isLR ? -1 : 1);
+                   placeStruct(2600, 0, MAP_WIDTH - 2600, 40);
+               }
+               else if (i === 4) {
+                   // TIER 5: Platforming Over Void
+                   placeStruct(0, 0, 400, 40);
+                   for(let d = 600; d < 3200; d += 350) {
+                       placeStruct(d, (d%700===0) ? -50 : 0, 150, 40);
+                       if (d%2 !== 0) placeTrap(Spike, 40, d+50, (d%700===0) ? -70 : -20);
+                   }
+                   placeStruct(3400, 0, MAP_WIDTH-3400, 40);
+               }
+               else if (i === 5) {
+                   // TIER 6: Chaos Mix
+                   placeStruct(0, 0, MAP_WIDTH, 40);
+                   placeTrap(Crusher, 60, 800, -300); placeStruct(800, -300, 60, 40);
+                   placeTrap(WalkerTrap, 70, 1200, -70, 400);
+                   placeTrap(Mine, 30, 1800, -10);
+                   placeTrap(Emitter, 30, 2400, -30, isLR ? -1 : 1);
+                   placeTrap(Crusher, 60, 2800, -300); placeStruct(2800, -300, 60, 40);
+               }
+               else if (i === 6) {
+                   // TIER 7: Walker Gauntlet
+                   placeStruct(0, 0, MAP_WIDTH, 40);
+                   for(let d = 500; d < 3500; d += 450) {
+                       placeTrap(WalkerTrap, 70, d, -70, 200);
+                       placeStruct(d+100, -120, 80, 20); // platforms above them
+                   }
+               }
+               else if (i === 7) {
+                   // TIER 8: The Final Stretch to Grandma
+                   placeStruct(0, 0, MAP_WIDTH, 40);
+                   placeTrap(Crusher, 60, 1000, -300); placeStruct(1000, -300, 60, 40);
+                   placeTrap(Mine, 30, 1500, -10);
+                   placeTrap(WalkerTrap, 70, 2000, -70, 600);
+                   placeTrap(Emitter, 30, 3000, -40, isLR ? -1 : 1);
                }
            }
        }
@@ -481,10 +532,9 @@
            if (p1.dead && p2.dead) {
                activeSeq = false;
                activeDebuff = DEBUFFS[Math.floor(Math.random() * DEBUFFS.length)];
-               document.getElementById('debuff-display').innerText = `DEBUFF: ${activeDebuff.name}`;
-               document.getElementById('debuff-display').style.color = activeDebuff.color;
+               document.getElementById('debuff-display').innerText = `MODIFIER: ${activeDebuff.name}`;
                
-               showDialog("TEAM WIPE", `Both subjects terminated.<br><br>Applying System Constraint: <strong style="color:${activeDebuff.color}">${activeDebuff.name}</strong>`, "REDEPLOY", () => {
+               showDialog("DOUBLE KO", `Both grandchildren have perished.<br><br>Grandma applies: <strong style="color:var(--danger)">${activeDebuff.name}</strong>`, "TRY AGAIN", () => {
                    hideDialog();
                    respawnTeam(currentTier);
                });
@@ -494,12 +544,11 @@
        function reachCheckpoint(tier) {
            if (tier > currentTier) {
                currentTier = tier;
-               document.getElementById('progress-tracker').innerText = `GOAL: ${currentTier} / ${TOTAL_TIERS}`;
+               document.getElementById('progress-tracker').innerText = `TIER: ${currentTier + 1} / ${TOTAL_TIERS}`;
                if (currentTier >= TOTAL_TIERS) {
                    activeSeq = false;
-                   showDialog("TEST COMPLETE", "All tiers traversed. Convergence achieved.", "RESTART SIMULATION", () => location.reload());
+                   showDialog("YOU MADE IT", "You successfully navigated the hazards and reached Grandma.", "PLAY AGAIN", () => location.reload());
                } else {
-                   // Instantly revive dead buddy to keep game moving
                    if (p1.dead) p1.spawnAt(mapData.checkpoints[currentTier]);
                    if (p2.dead) p2.spawnAt(mapData.checkpoints[currentTier]);
                }
@@ -508,7 +557,7 @@
 
        function respawnTeam(tier) {
            projectiles = [];
-           mapData.traps.forEach(t => t.active = false);
+           mapData.traps.forEach(t => { if(t instanceof Mine) { t.timer = -1; t.exploded = false; } });
            p1.spawnAt(mapData.checkpoints[tier]);
            p2.spawnAt(mapData.checkpoints[tier]);
            activeSeq = true;
@@ -525,41 +574,17 @@
            btn.onclick = action;
            box.style.display = 'block';
        }
-       function hideDialog() {
-           document.getElementById('msg-box').style.display = 'none';
-       }
-
-       function initBotHUD() {
-           const roster = document.getElementById('bot-roster');
-           roster.innerHTML = 'BOT AI: ';
-           BOTS.forEach(b => {
-               roster.innerHTML += `<div class="bot-indicator" style="background:${b.color}" title="${b.name}"></div>`;
-           });
-       }
-
-       function runBotLogic(dt) {
-           for(let t of mapData.traps) {
-               if (t.botId >= 0 && !t.active) {
-                   let dist = t.distToPlayers();
-                   if (dist < 600) {
-                       if (Math.random() < BOTS[t.botId].aggression) {
-                           t.trigger();
-                       }
-                   }
-               }
-           }
-       }
+       function hideDialog() { document.getElementById('msg-box').style.display = 'none'; }
 
        function gameLoop(time) {
            if (!activeSeq) return;
            let dt = (time - lastTime) / 1000;
            lastTime = time;
-           if (dt > 0.1) dt = 0.1; // Cap dt
+           if (dt > 0.1) dt = 0.1; 
 
            // Update
-           p1.update(dt);
-           p2.update(dt);
-           runBotLogic(dt);
+           p1.update(dt, p2);
+           p2.update(dt, p1);
            
            mapData.traps.forEach(t => t.update(dt));
            
@@ -575,7 +600,7 @@
                if (particles[i].life <= 0) particles.splice(i,1);
            }
 
-           // Camera target (average of living players)
+           // Camera Tracking
            let tx = 0, ty = 0, count = 0;
            if (!p1.dead) { tx += p1.x; ty += p1.y; count++; }
            if (!p2.dead) { tx += p2.x; ty += p2.y; count++; }
@@ -585,26 +610,25 @@
                camera.y += (ty - cvs.height/2 - camera.y) * 5 * dt;
            }
            
-           // Clamp Camera strictly inside map to hide void
            if (camera.x < -100) camera.x = -100;
            if (camera.x > MAP_WIDTH - cvs.width + 100) camera.x = MAP_WIDTH - cvs.width + 100;
 
            if (screenShake > 0) {
                camera.x += (Math.random()-0.5)*screenShake;
                camera.y += (Math.random()-0.5)*screenShake;
-               screenShake -= 30 * dt;
+               screenShake -= 40 * dt;
            }
 
-           // Draw
-           ctx.fillStyle = "#0b0c10";
+           // --- DRAW ---
+           ctx.fillStyle = "#e0e0e0"; // Light clean background
            ctx.fillRect(0, 0, cvs.width, cvs.height);
 
            ctx.save();
            ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
 
            // Grid background
-           ctx.strokeStyle = "#1f2833";
-           ctx.lineWidth = 2;
+           ctx.strokeStyle = "#ccc";
+           ctx.lineWidth = 1;
            ctx.beginPath();
            let startX = Math.floor(camera.x / 100) * 100;
            let startY = Math.floor(camera.y / 100) * 100;
@@ -613,36 +637,41 @@
            ctx.stroke();
 
            // Tier markers
-           ctx.fillStyle = "#1f2833";
-           ctx.font = "bold 80px monospace";
+           ctx.fillStyle = "rgba(0,0,0,0.1)";
+           ctx.font = "bold 120px Arial";
            for(let i=0; i<TOTAL_TIERS; i++) {
-               ctx.fillText(`TIER ${i+1}`, MAP_WIDTH/2 - 150, i*TIER_HEIGHT + TIER_HEIGHT/2 + 30);
+               ctx.fillText(`FLOOR ${i+1}`, MAP_WIDTH/2 - 200, i*TIER_HEIGHT + TIER_HEIGHT/2);
            }
 
-           // Goals
-           ctx.fillStyle = "#225522";
+           // Goals & Grandma
            for(let g of mapData.goals) {
-               ctx.fillRect(g.x, g.y, g.w, g.h);
-               ctx.fillStyle = "#44aa44";
-               ctx.fillRect(g.x+10, g.y+10, g.w-20, g.h-20);
-               ctx.fillStyle = "#225522";
+               if (g.tier === TOTAL_TIERS - 1) {
+                   if (imgGrandma.complete && imgGrandma.naturalHeight !== 0) {
+                       ctx.drawImage(imgGrandma, g.x, g.y, g.w, g.h);
+                   } else {
+                       ctx.fillStyle = "pink"; ctx.fillRect(g.x, g.y, g.w, g.h);
+                       ctx.fillStyle = "black"; ctx.font="20px Arial"; ctx.fillText("GRANDMA", g.x, g.y+50);
+                   }
+               } else {
+                   ctx.fillStyle = "rgba(40, 167, 69, 0.4)"; // Safe zone green
+                   ctx.fillRect(g.x, g.y, g.w, g.h);
+               }
            }
 
            // Structures
            for(let s of mapData.structures) {
-               ctx.fillStyle = "#1f2833";
+               ctx.fillStyle = "#222";
                ctx.fillRect(s.x, s.y, s.w, s.h);
-               ctx.fillStyle = "#45a29e";
-               ctx.fillRect(s.x, s.y, s.w, 4); // Top highlight
-               ctx.fillRect(s.x, s.y, 4, s.h); // Left highlight
+               ctx.fillStyle = "#555";
+               ctx.fillRect(s.x, s.y, s.w, 4); // Top edge
            }
 
-           // Traps
            mapData.traps.forEach(t => t.draw());
            
-           // Projectiles
-           ctx.fillStyle = "#ffcc00";
-           projectiles.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+           ctx.fillStyle = "#FFC107";
+           projectiles.forEach(p => {
+               ctx.beginPath(); ctx.arc(p.x+6, p.y+6, 6, 0, Math.PI*2); ctx.fill();
+           });
 
            p1.draw();
            p2.draw();
@@ -650,35 +679,15 @@
 
            ctx.restore();
 
-           // Global Debuff Overlay (Darkness)
-           if (activeDebuff && activeDebuff.name === "DARKNESS") {
-               ctx.fillStyle = "#111111";
-               ctx.beginPath();
-               ctx.rect(0, 0, cvs.width, cvs.height);
-               
-               let drawCutout = (p) => {
-                   if(!p.dead) {
-                       let sx = p.x + p.w/2 - camera.x;
-                       let sy = p.y + p.h/2 - camera.y;
-                       ctx.moveTo(sx, sy);
-                       ctx.arc(sx, sy, 150, 0, Math.PI*2, true);
-                   }
-               };
-               drawCutout(p1);
-               drawCutout(p2);
-               ctx.fill();
-           }
-
            if (activeSeq) requestAnimationFrame(gameLoop);
        }
 
        decoy.addEventListener('dblclick', () => {
            decoy.style.display = 'none';
            wrapper.style.display = 'block';
-           initBotHUD();
            buildMap();
            
-           showDialog("CO-OP PROTOCOL INIT", "Navigate through 8 tiers to the final convergence zone.<br><br><b>P1:</b> W, A, S, D<br><b>P2:</b> ARROWS<br><br>Avoid hazards. If both subjects die, progress resets to the last checkpoint and a system constraint is applied.", "COMMENCE", () => {
+           showDialog("VISIT GRANDMA", "Navigate through 8 unique floors to reach Grandma's living room.<br><br>Beware of her <b>rogue Walkers</b>, Crushers, and Landmines.<br><br><i>Pro Tip:</i> Press <b>SPACE</b> or <b>SHIFT</b> to shove the other player into traps.", "ENTER HOUSE", () => {
                hideDialog();
                respawnTeam(0);
            });
