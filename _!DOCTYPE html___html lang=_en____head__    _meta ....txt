@@ -1,0 +1,688 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Zouse of Zazards: Co-Op Protocol</title>
+   <style>
+       :root {
+           --bg-color: #0b0c10;
+           --text-color: #66fcf1;
+       }
+       body {
+           font-family: "Courier New", Courier, monospace;
+           background-color: var(--bg-color);
+           color: var(--text-color);
+           margin: 0;
+           height: 100vh;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           overflow: hidden;
+           user-select: none;
+       }
+       #decoy-container {
+           text-align: center;
+           border: 2px solid #45a29e;
+           padding: 40px;
+           background: #1f2833;
+           box-shadow: 8px 8px 0px #000;
+           cursor: pointer;
+       }
+       #decoy-container h1 { margin-top: 0; color: #ff007f; }
+       #sim-wrapper {
+           display: none;
+           position: relative;
+           width: 900px;
+           height: 600px;
+           background-color: #111;
+           box-shadow: 10px 10px 0px rgba(0,0,0,1);
+           border: 4px solid #45a29e;
+       }
+       canvas {
+           display: block;
+           width: 100%;
+           height: 100%;
+       }
+       #ui-layer {
+           position: absolute;
+           top: 0; left: 0; width: 100%; height: 100%;
+           pointer-events: none;
+           display: flex;
+           flex-direction: column;
+           justify-content: space-between;
+       }
+       .hud-bar {
+           display: flex;
+           justify-content: space-between;
+           padding: 10px 20px;
+           background: rgba(11, 12, 16, 0.85);
+           border-bottom: 2px solid #45a29e;
+           font-weight: bold;
+           font-size: 16px;
+       }
+       .hud-footer {
+           padding: 10px 20px;
+           background: rgba(11, 12, 16, 0.85);
+           border-top: 2px solid #45a29e;
+           display: flex;
+           justify-content: space-between;
+           font-size: 14px;
+       }
+       .message-box {
+           position: absolute;
+           top: 50%; left: 50%;
+           transform: translate(-50%, -50%);
+           background: #1f2833;
+           border: 4px solid #ff007f;
+           padding: 20px;
+           text-align: center;
+           box-shadow: 10px 10px 0px rgba(0,0,0,0.8);
+           display: none;
+       }
+       .btn {
+           background: #45a29e;
+           color: #0b0c10;
+           border: none;
+           padding: 10px 20px;
+           font-size: 16px;
+           font-family: inherit;
+           font-weight: bold;
+           cursor: pointer;
+           pointer-events: auto;
+           margin-top: 15px;
+       }
+       .btn:hover { background: #66fcf1; }
+       
+       .bot-indicator { display: inline-block; width: 10px; height: 10px; margin-right: 5px; }
+   </style>
+</head>
+<body>
+   <div id="decoy-container">
+       <h1>SYSTEM OF HAZARDS</h1>
+       <p>CO-OP TRAINING PROTOCOL</p>
+       <p style="margin-top:30px; font-size: 0.9em; color:#c5c6c7;">[ DOUBLE CLICK TO INITIALIZE ]</p>
+   </div>
+
+   <div id="sim-wrapper">
+       <canvas id="sim-canvas" width="900" height="600"></canvas>
+       <div id="ui-layer">
+           <div class="hud-bar">
+               <div style="color: #66fcf1;">P1: W,A,S,D</div>
+               <div id="debuff-display" style="color: #ffcc00; text-transform: uppercase;">DEBUFF: NONE</div>
+               <div style="color: #ff007f;">P2: ARROWS</div>
+           </div>
+           <div class="message-box" id="msg-box">
+               <h2 id="msg-title" style="margin:0 0 10px 0; color: white;"></h2>
+               <p id="msg-desc" style="margin:0 0 15px 0;"></p>
+               <button class="btn" id="msg-btn">CONTINUE</button>
+           </div>
+           <div class="hud-footer">
+               <div id="bot-roster"></div>
+               <div id="progress-tracker">GOAL: 0 / 8</div>
+           </div>
+       </div>
+   </div>
+
+   <script>
+       const decoy = document.getElementById('decoy-container');
+       const wrapper = document.getElementById('sim-wrapper');
+       const cvs = document.getElementById('sim-canvas');
+       const ctx = cvs.getContext('2d');
+
+       // Game Globals
+       let activeSeq = false;
+       let lastTime = 0;
+       let camera = { x: 0, y: 0 };
+       let screenShake = 0;
+       let particles = [];
+       let projectiles = [];
+       let currentTier = 0;
+       let activeDebuff = null;
+       
+       const TIER_HEIGHT = 450;
+       const MAP_WIDTH = 3500;
+       const TOTAL_TIERS = 8;
+
+       const DEBUFFS = [
+           { name: "ICE FLOOR", effect: (p) => p.friction = 0.99, color: "#aaddff" },
+           { name: "HEAVY GRAVITY", effect: (p) => { p.grav = 1800; p.jumpForce = 550; }, color: "#ff5555" },
+           { name: "MOON JUMP", effect: (p) => { p.grav = 600; p.jumpForce = 450; }, color: "#aaaaff" },
+           { name: "SLUGGISH", effect: (p) => p.accel = 800, color: "#88cc88" },
+           { name: "INVERTED X", effect: (p) => p.invertedX = true, color: "#ff88ff" },
+           { name: "DARKNESS", effect: (p) => {}, isGlobal: true, color: "#111111" }
+       ];
+
+       // Bots representing trap logic
+       const BOTS = [
+           { id: 0, name: "Bot A", color: "#ff3333", aggression: 0.02 },
+           { id: 1, name: "Bot B", color: "#ff9933", aggression: 0.03 },
+           { id: 2, name: "Bot C", color: "#ffff33", aggression: 0.02 },
+           { id: 3, name: "Bot D", color: "#33ff33", aggression: 0.04 },
+           { id: 4, name: "Bot E", color: "#33ffff", aggression: 0.02 },
+           { id: 5, name: "Bot F", color: "#3333ff", aggression: 0.05 },
+           { id: 6, name: "Bot G", color: "#9933ff", aggression: 0.03 },
+           { id: 7, name: "Bot H", color: "#ff33ff", aggression: 0.04 }
+       ];
+
+       let mapData = {
+           structures: [],
+           traps: [],
+           checkpoints: [],
+           goals: []
+       };
+
+       const keys = {
+           p1: { left: false, right: false, up: false },
+           p2: { left: false, right: false, up: false }
+       };
+
+       window.addEventListener('keydown', e => {
+           if (e.code === 'KeyA') keys.p1.left = true;
+           if (e.code === 'KeyD') keys.p1.right = true;
+           if (e.code === 'KeyW') keys.p1.up = true;
+           if (e.code === 'ArrowLeft') keys.p2.left = true;
+           if (e.code === 'ArrowRight') keys.p2.right = true;
+           if (e.code === 'ArrowUp') keys.p2.up = true;
+       });
+       window.addEventListener('keyup', e => {
+           if (e.code === 'KeyA') keys.p1.left = false;
+           if (e.code === 'KeyD') keys.p1.right = false;
+           if (e.code === 'KeyW') keys.p1.up = false;
+           if (e.code === 'ArrowLeft') keys.p2.left = false;
+           if (e.code === 'ArrowRight') keys.p2.right = false;
+           if (e.code === 'ArrowUp') keys.p2.up = false;
+       });
+
+       class Player {
+           constructor(id, color, inputs) {
+               this.id = id;
+               this.color = color;
+               this.inputs = inputs;
+               this.w = 24; this.h = 24;
+               this.dead = false;
+               this.resetPhysics();
+           }
+           resetPhysics() {
+               this.vx = 0; this.vy = 0;
+               this.grounded = false;
+               this.accel = 2000;
+               this.friction = 0.8;
+               this.grav = 1200;
+               this.jumpForce = 700;
+               this.invertedX = false;
+           }
+           applyDebuff() {
+               this.resetPhysics();
+               if (activeDebuff && !activeDebuff.isGlobal) {
+                   activeDebuff.effect(this);
+               }
+           }
+           spawnAt(cp) {
+               this.x = cp.x;
+               this.y = cp.y;
+               this.dead = false;
+               this.applyDebuff();
+           }
+           die() {
+               if(this.dead) return;
+               this.dead = true;
+               screenShake = 15;
+               for(let i=0; i<20; i++) {
+                   particles.push(new Particle(this.x + this.w/2, this.y + this.h/2, this.color));
+               }
+               checkTeamWipe();
+           }
+           update(dt) {
+               if (this.dead) return;
+
+               let left = this.invertedX ? this.inputs.right : this.inputs.left;
+               let right = this.invertedX ? this.inputs.left : this.inputs.right;
+
+               if (left) this.vx -= this.accel * dt;
+               if (right) this.vx += this.accel * dt;
+               
+               this.vx *= this.friction;
+               this.vy += this.grav * dt;
+
+               if (this.inputs.up && this.grounded) {
+                   this.vy = -this.jumpForce;
+                   this.grounded = false;
+                   for(let i=0; i<5; i++) particles.push(new Particle(this.x+this.w/2, this.y+this.h, "#fff", true));
+               }
+
+               this.x += this.vx * dt;
+               this.resolveMapCollision('x');
+               this.y += this.vy * dt;
+               this.grounded = false;
+               this.resolveMapCollision('y');
+
+               // Traps Collision
+               for(let t of mapData.traps) {
+                   if (t.checkHit(this)) this.die();
+               }
+               for(let p of projectiles) {
+                   if(this.x < p.x+p.w && this.x+this.w > p.x && this.y < p.y+p.h && this.y+this.h > p.y) this.die();
+               }
+
+               // Check Goal
+               for(let g of mapData.goals) {
+                   if (g.tier === currentTier && this.x < g.x+g.w && this.x+this.w > g.x && this.y < g.y+g.h && this.y+this.h > g.y) {
+                       reachCheckpoint(g.tier + 1);
+                   }
+               }
+
+               // Bounds
+               if (this.y > (TOTAL_TIERS+1)*TIER_HEIGHT) this.die();
+           }
+           resolveMapCollision(axis) {
+               for (let s of mapData.structures) {
+                   if (this.x < s.x + s.w && this.x + this.w > s.x && this.y < s.y + s.h && this.y + this.h > s.y) {
+                       if (axis === 'x') {
+                           if (this.vx > 0) this.x = s.x - this.w;
+                           else if (this.vx < 0) this.x = s.x + s.w;
+                           this.vx = 0;
+                       } else {
+                           if (this.vy > 0) {
+                               this.y = s.y - this.h;
+                               this.grounded = true;
+                           } else if (this.vy < 0) {
+                               this.y = s.y + s.h;
+                           }
+                           this.vy = 0;
+                       }
+                   }
+               }
+           }
+           draw() {
+               if(this.dead) return;
+               ctx.fillStyle = this.color;
+               ctx.fillRect(this.x, this.y, this.w, this.h);
+               ctx.fillStyle = "#000";
+               ctx.fillRect(this.x+4, this.y+4, this.w-8, this.h-8);
+               ctx.fillStyle = this.color;
+               ctx.fillRect(this.x+8, this.y+8, this.w-16, this.h-16);
+           }
+       }
+
+       class Particle {
+           constructor(x, y, color, isDust=false) {
+               this.x = x; this.y = y;
+               this.color = color;
+               this.size = Math.random() * 6 + 2;
+               this.life = 1.0;
+               this.decay = Math.random() * 1.5 + 0.5;
+               let angle = Math.random() * Math.PI * 2;
+               let speed = isDust ? Math.random() * 50 + 20 : Math.random() * 300 + 50;
+               this.vx = Math.cos(angle) * speed;
+               this.vy = Math.sin(angle) * speed;
+               if(isDust) { this.vy = -Math.abs(this.vy); this.size = 4; }
+           }
+           update(dt) {
+               this.x += this.vx * dt;
+               this.y += this.vy * dt;
+               this.life -= this.decay * dt;
+           }
+           draw() {
+               if(this.life <= 0) return;
+               ctx.fillStyle = this.color;
+               ctx.fillRect(this.x, this.y, this.size, this.size);
+           }
+       }
+
+       class Trap {
+           constructor(x, y, botId) {
+               this.x = x; this.y = y;
+               this.botId = botId;
+               this.active = false;
+           }
+           trigger() { this.active = true; }
+           update(dt) {}
+           draw() {}
+           checkHit(p) { return false; }
+           distToPlayers() {
+               let d = 99999;
+               if(!p1.dead) d = Math.min(d, Math.hypot(p1.x - this.x, p1.y - this.y));
+               if(!p2.dead) d = Math.min(d, Math.hypot(p2.x - this.x, p2.y - this.y));
+               return d;
+           }
+       }
+
+       class Spike extends Trap {
+           constructor(x, y) { super(x, y, -1); this.w = 30; this.h = 30; this.active=true; }
+           checkHit(p) { return (p.x < this.x+this.w-5 && p.x+p.w > this.x+5 && p.y+p.h > this.y+10 && p.y < this.y+this.h); }
+           draw() {
+               ctx.fillStyle = "#ff2a2a";
+               ctx.beginPath();
+               ctx.moveTo(this.x + this.w/2, this.y);
+               ctx.lineTo(this.x + this.w, this.y + this.h);
+               ctx.lineTo(this.x, this.y + this.h);
+               ctx.fill();
+           }
+       }
+
+       class Piston extends Trap {
+           constructor(x, y, botId) { super(x, y, botId); this.w = 40; this.h = 40; this.baseY = y; this.timer = 0; }
+           trigger() { if(!this.active) { this.active = true; this.timer = 0; } }
+           update(dt) {
+               if(!this.active) return;
+               this.timer += dt;
+               if(this.timer < 0.15) this.h += 1500 * dt; // Smash down
+               else if(this.timer < 0.3) {} // Hold
+               else if(this.timer < 1.0) this.h -= 300 * dt; // Retract
+               else { this.active = false; this.h = 40; }
+           }
+           checkHit(p) { return (p.x < this.x+this.w && p.x+p.w > this.x && p.y < this.y+this.h && p.y+p.h > this.y); }
+           draw() {
+               ctx.fillStyle = "#45a29e";
+               ctx.fillRect(this.x+5, this.baseY, this.w-10, this.h); // Shaft
+               ctx.fillStyle = this.active ? "#ff2a2a" : "#ff9933";
+               ctx.fillRect(this.x, this.baseY + this.h - 20, this.w, 20); // Head
+           }
+       }
+
+       class Laser extends Trap {
+           constructor(x, y, botId, h) { super(x, y, botId); this.w = 10; this.maxH = h; this.h = 0; this.timer = 0; }
+           trigger() { if(!this.active) { this.active = true; this.timer = 0; } }
+           update(dt) {
+               if(!this.active) return;
+               this.timer += dt;
+               if(this.timer < 0.5) this.h = this.maxH; // Warning phase? No, just instant.
+               else if(this.timer < 2.0) this.h = this.maxH;
+               else { this.active = false; this.h = 0; }
+           }
+           checkHit(p) { return this.active && this.timer > 0.5 && (p.x < this.x+this.w && p.x+p.w > this.x && p.y < this.y+this.h && p.y+p.h > this.y); }
+           draw() {
+               ctx.fillStyle = "#ff2a2a";
+               ctx.fillRect(this.x-5, this.y, 20, 10);
+               if(this.active) {
+                   ctx.fillStyle = this.timer < 0.5 ? "#550000" : "#ff2a2a"; // Solid warning color then bright
+                   ctx.fillRect(this.x, this.y+10, this.w, this.h);
+               }
+           }
+       }
+
+       class Emitter extends Trap {
+           constructor(x, y, botId, dir) { super(x, y, botId); this.w = 30; this.h = 30; this.dir = dir; this.cd = 0; }
+           trigger() { if(this.cd <= 0) { this.active = true; this.cd = 2.0; } }
+           update(dt) {
+               if(this.cd > 0) this.cd -= dt;
+               if(this.active) {
+                   projectiles.push({x: this.x+15, y: this.y+10, w:10, h:10, vx: this.dir * 400});
+                   this.active = false;
+               }
+           }
+           draw() {
+               ctx.fillStyle = this.cd > 0 ? "#555" : "#ff9933";
+               ctx.fillRect(this.x, this.y, this.w, this.h);
+               ctx.fillStyle = "#000";
+               ctx.fillRect(this.dir===1 ? this.x+20 : this.x, this.y+10, 10, 10);
+           }
+       }
+
+       let p1 = new Player(1, "#66fcf1", keys.p1);
+       let p2 = new Player(2, "#ff007f", keys.p2);
+
+       function buildMap() {
+           mapData = { structures: [], traps: [], checkpoints: [], goals: [] };
+           
+           // Outer bounds
+           mapData.structures.push({x: -100, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
+           mapData.structures.push({x: MAP_WIDTH, y: 0, w: 100, h: TOTAL_TIERS * TIER_HEIGHT});
+
+           for(let i=0; i<TOTAL_TIERS; i++) {
+               let y = i * TIER_HEIGHT;
+               let right = (i%2 === 0);
+               let floorY = y + TIER_HEIGHT - 40;
+
+               // Checkpoint
+               let cpX = right ? 100 : MAP_WIDTH - 150;
+               mapData.checkpoints.push({x: cpX, y: floorY - 60});
+
+               // Goal Area
+               let goalX = right ? MAP_WIDTH - 150 : 50;
+               mapData.goals.push({x: goalX, y: floorY - 100, w: 100, h: 100, tier: i});
+
+               // Floor Chunk
+               let fW = MAP_WIDTH - 200;
+               let fX = right ? 0 : 200;
+               mapData.structures.push({x: fX, y: floorY, w: fW, h: 40});
+
+               // Generate Obstacles & Traps
+               let cursor = right ? 400 : MAP_WIDTH - 400;
+               let step = right ? 1 : -1;
+               let end = right ? MAP_WIDTH - 400 : 400;
+
+               while((right && cursor < end) || (!right && cursor > end)) {
+                   let r = Math.random();
+                   let botId = Math.floor(Math.random() * 8);
+                   
+                   if (r < 0.25) { // Wall Hurdle
+                       mapData.structures.push({x: cursor, y: floorY - 80, w: 30, h: 80});
+                       mapData.traps.push(new Spike(cursor + 30 * step, floorY - 30));
+                   } else if (r < 0.5) { // Piston
+                       mapData.traps.push(new Piston(cursor, y + 40, botId));
+                       mapData.structures.push({x: cursor-10, y: y, w: 60, h: 40}); // Ceiling anchor
+                   } else if (r < 0.75) { // Laser
+                       mapData.traps.push(new Laser(cursor, y + 40, botId, TIER_HEIGHT - 80));
+                   } else { // Emitter
+                       mapData.traps.push(new Emitter(cursor, floorY - 40, botId, step * -1)); // Shoots towards incoming player
+                   }
+                   
+                   // Minor aesthetic pillars
+                   mapData.structures.push({x: cursor + 150*step, y: floorY, w: 40, h: Math.random()*20+10});
+                   
+                   cursor += step * (Math.random() * 200 + 300);
+               }
+           }
+       }
+
+       function checkTeamWipe() {
+           if (p1.dead && p2.dead) {
+               activeSeq = false;
+               activeDebuff = DEBUFFS[Math.floor(Math.random() * DEBUFFS.length)];
+               document.getElementById('debuff-display').innerText = `DEBUFF: ${activeDebuff.name}`;
+               document.getElementById('debuff-display').style.color = activeDebuff.color;
+               
+               showDialog("TEAM WIPE", `Both subjects terminated.<br><br>Applying System Constraint: <strong style="color:${activeDebuff.color}">${activeDebuff.name}</strong>`, "REDEPLOY", () => {
+                   hideDialog();
+                   respawnTeam(currentTier);
+               });
+           }
+       }
+
+       function reachCheckpoint(tier) {
+           if (tier > currentTier) {
+               currentTier = tier;
+               document.getElementById('progress-tracker').innerText = `GOAL: ${currentTier} / ${TOTAL_TIERS}`;
+               if (currentTier >= TOTAL_TIERS) {
+                   activeSeq = false;
+                   showDialog("TEST COMPLETE", "All tiers traversed. Convergence achieved.", "RESTART SIMULATION", () => location.reload());
+               } else {
+                   // Instantly revive dead buddy to keep game moving
+                   if (p1.dead) p1.spawnAt(mapData.checkpoints[currentTier]);
+                   if (p2.dead) p2.spawnAt(mapData.checkpoints[currentTier]);
+               }
+           }
+       }
+
+       function respawnTeam(tier) {
+           projectiles = [];
+           mapData.traps.forEach(t => t.active = false);
+           p1.spawnAt(mapData.checkpoints[tier]);
+           p2.spawnAt(mapData.checkpoints[tier]);
+           activeSeq = true;
+           lastTime = performance.now();
+           requestAnimationFrame(gameLoop);
+       }
+
+       function showDialog(title, desc, btnText, action) {
+           const box = document.getElementById('msg-box');
+           document.getElementById('msg-title').innerHTML = title;
+           document.getElementById('msg-desc').innerHTML = desc;
+           const btn = document.getElementById('msg-btn');
+           btn.innerText = btnText;
+           btn.onclick = action;
+           box.style.display = 'block';
+       }
+       function hideDialog() {
+           document.getElementById('msg-box').style.display = 'none';
+       }
+
+       function initBotHUD() {
+           const roster = document.getElementById('bot-roster');
+           roster.innerHTML = 'BOT AI: ';
+           BOTS.forEach(b => {
+               roster.innerHTML += `<div class="bot-indicator" style="background:${b.color}" title="${b.name}"></div>`;
+           });
+       }
+
+       function runBotLogic(dt) {
+           for(let t of mapData.traps) {
+               if (t.botId >= 0 && !t.active) {
+                   let dist = t.distToPlayers();
+                   if (dist < 600) {
+                       if (Math.random() < BOTS[t.botId].aggression) {
+                           t.trigger();
+                       }
+                   }
+               }
+           }
+       }
+
+       function gameLoop(time) {
+           if (!activeSeq) return;
+           let dt = (time - lastTime) / 1000;
+           lastTime = time;
+           if (dt > 0.1) dt = 0.1; // Cap dt
+
+           // Update
+           p1.update(dt);
+           p2.update(dt);
+           runBotLogic(dt);
+           
+           mapData.traps.forEach(t => t.update(dt));
+           
+           for(let i=projectiles.length-1; i>=0; i--) {
+               let p = projectiles[i];
+               p.x += p.vx * dt;
+               let hitWall = mapData.structures.some(s => p.x < s.x+s.w && p.x+p.w > s.x && p.y < s.y+s.h && p.y+p.h > s.y);
+               if (hitWall) projectiles.splice(i,1);
+           }
+
+           for(let i=particles.length-1; i>=0; i--) {
+               particles[i].update(dt);
+               if (particles[i].life <= 0) particles.splice(i,1);
+           }
+
+           // Camera target (average of living players)
+           let tx = 0, ty = 0, count = 0;
+           if (!p1.dead) { tx += p1.x; ty += p1.y; count++; }
+           if (!p2.dead) { tx += p2.x; ty += p2.y; count++; }
+           if (count > 0) {
+               tx /= count; ty /= count;
+               camera.x += (tx - cvs.width/2 - camera.x) * 5 * dt;
+               camera.y += (ty - cvs.height/2 - camera.y) * 5 * dt;
+           }
+           
+           // Clamp Camera strictly inside map to hide void
+           if (camera.x < -100) camera.x = -100;
+           if (camera.x > MAP_WIDTH - cvs.width + 100) camera.x = MAP_WIDTH - cvs.width + 100;
+
+           if (screenShake > 0) {
+               camera.x += (Math.random()-0.5)*screenShake;
+               camera.y += (Math.random()-0.5)*screenShake;
+               screenShake -= 30 * dt;
+           }
+
+           // Draw
+           ctx.fillStyle = "#0b0c10";
+           ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+           ctx.save();
+           ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
+
+           // Grid background
+           ctx.strokeStyle = "#1f2833";
+           ctx.lineWidth = 2;
+           ctx.beginPath();
+           let startX = Math.floor(camera.x / 100) * 100;
+           let startY = Math.floor(camera.y / 100) * 100;
+           for(let x = startX; x < camera.x + cvs.width; x += 100) { ctx.moveTo(x, camera.y); ctx.lineTo(x, camera.y+cvs.height); }
+           for(let y = startY; y < camera.y + cvs.height; y += 100) { ctx.moveTo(camera.x, y); ctx.lineTo(camera.x+cvs.width, y); }
+           ctx.stroke();
+
+           // Tier markers
+           ctx.fillStyle = "#1f2833";
+           ctx.font = "bold 80px monospace";
+           for(let i=0; i<TOTAL_TIERS; i++) {
+               ctx.fillText(`TIER ${i+1}`, MAP_WIDTH/2 - 150, i*TIER_HEIGHT + TIER_HEIGHT/2 + 30);
+           }
+
+           // Goals
+           ctx.fillStyle = "#225522";
+           for(let g of mapData.goals) {
+               ctx.fillRect(g.x, g.y, g.w, g.h);
+               ctx.fillStyle = "#44aa44";
+               ctx.fillRect(g.x+10, g.y+10, g.w-20, g.h-20);
+               ctx.fillStyle = "#225522";
+           }
+
+           // Structures
+           for(let s of mapData.structures) {
+               ctx.fillStyle = "#1f2833";
+               ctx.fillRect(s.x, s.y, s.w, s.h);
+               ctx.fillStyle = "#45a29e";
+               ctx.fillRect(s.x, s.y, s.w, 4); // Top highlight
+               ctx.fillRect(s.x, s.y, 4, s.h); // Left highlight
+           }
+
+           // Traps
+           mapData.traps.forEach(t => t.draw());
+           
+           // Projectiles
+           ctx.fillStyle = "#ffcc00";
+           projectiles.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+
+           p1.draw();
+           p2.draw();
+           particles.forEach(p => p.draw());
+
+           ctx.restore();
+
+           // Global Debuff Overlay (Darkness)
+           if (activeDebuff && activeDebuff.name === "DARKNESS") {
+               ctx.fillStyle = "#111111";
+               ctx.beginPath();
+               ctx.rect(0, 0, cvs.width, cvs.height);
+               
+               let drawCutout = (p) => {
+                   if(!p.dead) {
+                       let sx = p.x + p.w/2 - camera.x;
+                       let sy = p.y + p.h/2 - camera.y;
+                       ctx.moveTo(sx, sy);
+                       ctx.arc(sx, sy, 150, 0, Math.PI*2, true);
+                   }
+               };
+               drawCutout(p1);
+               drawCutout(p2);
+               ctx.fill();
+           }
+
+           if (activeSeq) requestAnimationFrame(gameLoop);
+       }
+
+       decoy.addEventListener('dblclick', () => {
+           decoy.style.display = 'none';
+           wrapper.style.display = 'block';
+           initBotHUD();
+           buildMap();
+           
+           showDialog("CO-OP PROTOCOL INIT", "Navigate through 8 tiers to the final convergence zone.<br><br><b>P1:</b> W, A, S, D<br><b>P2:</b> ARROWS<br><br>Avoid hazards. If both subjects die, progress resets to the last checkpoint and a system constraint is applied.", "COMMENCE", () => {
+               hideDialog();
+               respawnTeam(0);
+           });
+       });
+   </script>
+</body>
+</html>
