@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kinematic Analysis - Multi-Agent Testbed</title>
+    <title>Zouse of Zazards</title>
     <style>
         :root {
             --bg-color: #fcfcfc;
@@ -29,34 +29,16 @@
 </head>
 <body>
     <div id="decoy-container">
-        <div class="doc-header">
-            <div class="institution">University Mechanics</div>
-            <h1>Multi-Agent Kinematics</h1>
-            <div>Term: Fall Semester</div>
-        </div>
-
-        <h2>1. The Definition of a Limit</h2>
-        <p>The limit of a function <em>f(x)</em> as <em>x</em> approaches <em>c</em> is the value that <em>f(x)</em> gets closer to as <em>x</em> gets closer to <em>c</em>. Understanding this behavior is fundamental before proceeding to derivatives.</p>
-        <div class="concept-block">lim (x -> c) f(x) = L</div>
-
-        <h2>2. Dynamic Anomalies in Systems</h2>
-        <p>When multiple autonomous agents interact within a structured environment, localized variances (anomalies) can disrupt the intended trajectory.</p>
-        <div class="concept-block">Σ F = m * a (Applied sequentially)</div>
-        
-        <div class="doc-footer">
-            <p>Study Guide v3.2. Double-click anywhere to initialize analysis sequence.</p>
-        </div>
+        <p>Double click to leave this page.</p>
     </div>
 
     <script>
         function initSim() {
-            // 1. Purge Decoy
             document.body.innerHTML = '';
             
-            // 2. Inject Styles
             const style = document.createElement('style');
             style.innerHTML = `
-                body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
+               body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; font-family: monospace; display: grid; place-content: center; justify-items: center; height: 100vh; overflow: hidden; touch-action: none; }
                 #sim-container { position: relative; width: 900px; height: 600px; background-color: #010409; border: 2px solid #30363d; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
                 canvas { display: block; width: 100%; height: 100%; }
                 #telemetry-bar { width: 900px; display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; }
